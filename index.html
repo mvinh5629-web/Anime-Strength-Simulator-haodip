@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Anime +1 Strength to Fight Anime - Roblox Simulator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Fredoka & Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        roblox: ['Fredoka', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        robloxBlue: '#00a2ff',
+                        robloxGreen: '#00e676',
+                        robloxYellow: '#ffea00',
+                        robloxRed: '#ff2a55',
+                        robloxPurple: '#a855f7',
+                        robloxDark: '#0f172a',
+                    },
+                    boxShadow: {
+                        'roblox': '0 8px 0 rgba(0,0,0,0.4), 0 10px 15px rgba(0,0,0,0.5)',
+                        'roblox-sm': '0 4px 0 rgba(0,0,0,0.3)',
+                        'neon-blue': '0 0 20px #00a2ff',
+                        'neon-gold': '0 0 25px #ffea00',
+                        'neon-red': '0 0 25px #ff2a55',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow: hidden;
+            background-color: #0b0f19;
+        }
+        canvas {
+            image-rendering: pixelated;
+        }
+        .roblox-btn {
+            transition: all 0.08s ease;
+            transform: translateY(0);
+        }
+        .roblox-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.4) !important;
+        }
+        .roblox-panel {
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(14px);
+            border: 4px solid rgba(255, 255, 255, 0.18);
+        }
+        .text-stroke {
+            -webkit-text-stroke: 2px #000;
+        }
+        .text-stroke-sm {
+            -webkit-text-stroke: 1px #000;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00a2ff;
+            border-radius: 8px;
+        }
+        
+        /* Floating Damage and Stat Animations */
+        @keyframes floatDamageUp {
+            0% { opacity: 1; transform: translateY(0) scale(0.8) rotate(-5deg); }
+            30% { transform: translateY(-30px) scale(1.3) rotate(5deg); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1) rotate(0deg); }
+        }
+        .float-dmg {
+            position: absolute;
+            pointer-events: none;
+            animation: floatDamageUp 0.85s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+            font-weight: 900;
+            z-index: 100;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.8);
+        }
+
+        /* Gacha Box Glow Animation */
+        @keyframes gachaRainbowPulse {
+            0% { filter: drop-shadow(0 0 15px #00a2ff); transform: scale(1); }
+            33% { filter: drop-shadow(0 0 25px #ffea00); transform: scale(1.06); }
+            66% { filter: drop-shadow(0 0 25px #ff2a55); transform: scale(0.98); }
+            100% { filter: drop-shadow(0 0 15px #00a2ff); transform: scale(1); }
+        }
+        .gacha-rainbow-anim {
+            animation: gachaRainbowPulse 1.2s infinite linear;
+        }
+    </style>
+</head>
+<body class="w-screen h-screen relative overflow-hidden bg-slate-950 text-white">
+
+    <!-- Interactive Background Canvas -->
+    <canvas id="gameCanvas" class="absolute inset-0 w-full h-full z-0"></canvas>
+
+    <!-- Floating Numbers Layer -->
+    <div id="floatingContainer" class="absolute inset-0 pointer-events-none z-10"></div>
+
+    <!-- MAIN GAME HUD LAYER -->
+    <div class="relative z-20 w-full h-full flex flex-col justify-between p-3 md:p-5 pointer-events-none">
+        
+        <!-- TOP STATS BAR -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pointer-events-auto">
+            <!-- Left Side: Strength & Cash -->
+            <div class="flex items-center gap-2 md:gap-3 flex-wrap">
+                <!-- Strength Badge -->
+                <div class="flex items-center bg-gradient-to-r from-red-600 via-orange-500 to-amber-500 border-4 border-red-950 rounded-2xl px-3 py-1.5 shadow-roblox">
+                    <i class="fa-solid fa-dumbbell text-2xl text-yellow-300 mr-2.5 drop-shadow"></i>
+                    <div>
+                        <div class="text-[10px] md:text-xs font-black uppercase tracking-wider text-red-100">STRENGTH</div>
+                        <div id="statStrength" class="text-lg md:text-2xl font-black text-stroke text-white leading-none">0</div>
+                    </div>
+                </div>
+
+                <!-- Cash Badge -->
+                <div class="flex items-center bg-gradient-to-r from-emerald-600 to-green-500 border-4 border-green-950 rounded-2xl px-3 py-1.5 shadow-roblox">
+                    <i class="fa-solid fa-money-bill-wave text-2xl text-yellow-300 mr-2.5 drop-shadow"></i>
+                    <div>
+                        <div class="text-[10px] md:text-xs font-black uppercase tracking-wider text-green-100">CASH</div>
+                        <div id="statCash" class="text-lg md:text-2xl font-black text-stroke text-white leading-none">0</div>
+                    </div>
+                </div>
+
+                <!-- Cash Per Second -->
+                <div class="hidden sm:flex items-center bg-slate-900/90 border-2 border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-emerald-400 shadow-lg">
+                    <i class="fa-solid fa-bolt mr-1.5 text-yellow-400"></i>
+                    +<span id="statCPS">0</span> Cash/s
+                </div>
+            </div>
+
+            <!-- Right Side: Rebirth & Current Map -->
+            <div class="flex items-center gap-2">
+                <!-- Rebirth Badge -->
+                <div class="flex items-center bg-gradient-to-r from-purple-600 to-indigo-600 border-4 border-purple-950 rounded-2xl px-3 py-1.5 shadow-roblox">
+                    <i class="fa-solid fa-arrows-rotate text-2xl text-purple-200 mr-2 drop-shadow"></i>
+                    <div>
+                        <div class="text-[10px] md:text-xs font-black uppercase tracking-wider text-purple-200">REBIRTH</div>
+                        <div id="statRebirth" class="text-lg md:text-2xl font-black text-stroke text-white leading-none">x1</div>
+                    </div>
+                </div>
+
+                <!-- Current Map Name -->
+                <div id="mapBadge" class="bg-amber-500 border-4 border-amber-800 text-slate-950 font-black rounded-2xl px-3.5 py-2 text-xs md:text-sm shadow-roblox uppercase">
+                    Map 1: Làng Lá
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER CLICK AREA FOR TRAINING -->
+        <div id="clickTargetArea" class="absolute inset-0 m-auto w-full max-w-xl h-96 flex flex-col items-center justify-center pointer-events-auto cursor-pointer">
+            <div class="bg-slate-950/70 backdrop-blur-md px-5 py-2.5 rounded-full border-2 border-yellow-400/50 text-white font-bold text-sm shadow-neon-gold pointer-events-none mb-48 flex items-center gap-2">
+                <i class="fa-solid fa-hand-pointer text-yellow-300 animate-bounce"></i> Click hoặc nhấn SPACE để tập tạ tăng Strength!
+            </div>
+        </div>
+
+        <!-- BOTTOM CONTROL BAR & MENU BUTTONS -->
+        <div class="w-full flex flex-col md:flex-row items-center justify-between gap-3 pointer-events-auto z-30">
+            
+            <!-- Left Side Actions -->
+            <div class="flex items-center gap-2 w-full md:w-auto justify-center">
+                <!-- Auto-Train Button -->
+                <button id="btnAutoTrain" onclick="toggleAutoTrain()" class="roblox-btn bg-gradient-to-b from-gray-700 to-gray-900 border-4 border-gray-600 text-white font-black px-4 py-3 rounded-2xl shadow-roblox flex items-center gap-2">
+                    <i id="iconAutoTrain" class="fa-solid fa-robot text-xl text-gray-400"></i>
+                    <span id="textAutoTrain" class="text-xs md:text-sm uppercase">Auto Train: OFF</span>
+                </button>
+
+                <!-- Rebirth Modal Button -->
+                <button onclick="openModal('rebirthModal')" class="roblox-btn bg-gradient-to-b from-purple-500 to-purple-800 border-4 border-purple-950 text-white font-black px-4 py-3 rounded-2xl shadow-roblox flex items-center gap-2">
+                    <i class="fa-solid fa-angles-up text-xl text-yellow-300"></i>
+                    <span class="text-xs md:text-sm uppercase">Rebirth</span>
+                </button>
+            </div>
+
+            <!-- Big Manual Train Button -->
+            <button onclick="doTrain(event)" class="roblox-btn w-full md:w-72 bg-gradient-to-b from-yellow-400 via-amber-500 to-red-600 border-4 border-yellow-950 text-slate-950 font-black py-4 rounded-2xl shadow-neon-gold text-2xl flex items-center justify-center gap-2 tracking-wider">
+                <i class="fa-solid fa-fire text-red-950 text-3xl"></i>
+                <span>TẬP LỰC (+STR)</span>
+            </button>
+
+            <!-- Menu Navigation Buttons -->
+            <div class="flex items-center gap-2 flex-wrap justify-center w-full md:w-auto">
+                <!-- Shop Tạ -->
+                <button onclick="openModal('shopModal')" class="roblox-btn bg-gradient-to-b from-blue-500 to-blue-700 border-4 border-blue-950 text-white font-black p-3.5 rounded-2xl shadow-roblox flex flex-col items-center w-16">
+                    <i class="fa-solid fa-dumbbell text-xl text-yellow-300"></i>
+                    <span class="text-[10px] mt-0.5">TẠ</span>
+                </button>
+
+                <!-- Hộp Mù (Gacha) -->
+                <button onclick="openModal('gachaModal')" class="roblox-btn bg-gradient-to-b from-pink-500 to-rose-700 border-4 border-rose-950 text-white font-black p-3.5 rounded-2xl shadow-roblox flex flex-col items-center w-16">
+                    <i class="fa-solid fa-box-open text-xl text-yellow-300"></i>
+                    <span class="text-[10px] mt-0.5">HỘP MÙ</span>
+                </button>
+
+                <!-- Pets Đồng Hành -->
+                <button onclick="openModal('petsModal')" class="roblox-btn bg-gradient-to-b from-emerald-500 to-emerald-700 border-4 border-emerald-950 text-white font-black p-3.5 rounded-2xl shadow-roblox flex flex-col items-center w-16 relative">
+                    <i class="fa-solid fa-paw text-xl text-yellow-300"></i>
+                    <span class="text-[10px] mt-0.5">PETS</span>
+                    <span id="petEquipBadge" class="absolute -top-1.5 -right-1.5 bg-yellow-400 text-black text-[9px] font-black rounded-full w-5 h-5 flex items-center justify-center border border-black shadow">0/3</span>
+                </button>
+
+                <!-- Đánh Boss -->
+                <button onclick="openModal('bossModal')" class="roblox-btn bg-gradient-to-b from-red-600 to-red-800 border-4 border-red-950 text-white font-black p-3.5 rounded-2xl shadow-roblox flex flex-col items-center w-16">
+                    <i class="fa-solid fa-skull text-xl text-yellow-300"></i>
+                    <span class="text-[10px] mt-0.5">BOSS</span>
+                </button>
+
+                <!-- Bản Đồ Maps -->
+                <button onclick="openModal('mapModal')" class="roblox-btn bg-gradient-to-b from-cyan-500 to-teal-700 border-4 border-teal-950 text-white font-black p-3.5 rounded-2xl shadow-roblox flex flex-col items-center w-16">
+                    <i class="fa-solid fa-map-location-dot text-xl text-yellow-300"></i>
+                    <span class="text-[10px] mt-0.5">MAPS</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODALS LAYER ==================== -->
+
+    <!-- 1. SHOP TẠ MODAL -->
+    <div id="shopModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="roblox-panel w-full max-w-2xl rounded-3xl p-5 border-4 border-blue-500 flex flex-col max-h-[85vh]">
+            <div class="flex items-center justify-between pb-3 border-b-2 border-slate-700">
+                <h2 class="text-2xl font-black text-yellow-300 flex items-center gap-2">
+                    <i class="fa-solid fa-store"></i> CỬA HÀNG TẠ (WEIGHTS SHOP)
+                </h2>
+                <button onclick="closeModal('shopModal')" class="text-gray-400 hover:text-white text-2xl font-black px-2">&times;</button>
+            </div>
+            <div id="weightsList" class="grid grid-cols-1 sm:grid-cols-2 gap-3 overflow-y-auto my-4 p-1">
+                <!-- Dynamic Content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. HỘP MÙ (GACHA) MODAL -->
+    <div id="gachaModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="roblox-panel w-full max-w-2xl rounded-3xl p-5 border-4 border-pink-500 flex flex-col max-h-[85vh]">
+            <div class="flex items-center justify-between pb-3 border-b-2 border-slate-700">
+                <h2 class="text-2xl font-black text-pink-400 flex items-center gap-2">
+                    <i class="fa-solid fa-box-open"></i> HỘP MÙ ANIME (BLIND BOX)
+                </h2>
+                <button onclick="closeModal('gachaModal')" class="text-gray-400 hover:text-white text-2xl font-black px-2">&times;</button>
+            </div>
+            <div id="boxesList" class="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto my-4 p-1">
+                <!-- Dynamic Content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. PETS / ANIME CHARACTERS MODAL -->
+    <div id="petsModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="roblox-panel w-full max-w-3xl rounded-3xl p-5 border-4 border-emerald-500 flex flex-col max-h-[85vh]">
+            <div class="flex items-center justify-between pb-3 border-b-2 border-slate-700 flex-wrap gap-2">
+                <h2 class="text-2xl font-black text-emerald-400 flex items-center gap-2">
+                    <i class="fa-solid fa-users"></i> ĐỒNG HÀNH ANIME (<span id="petEquipedCount">0</span>/3)
+                </h2>
+                <div class="flex items-center gap-2">
+                    <button onclick="equipBestPets()" class="roblox-btn bg-gradient-to-r from-yellow-500 to-amber-600 text-slate-950 font-black px-3.5 py-1.5 rounded-xl text-xs shadow-roblox">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> EQUIP BEST
+                    </button>
+                    <button onclick="closeModal('petsModal')" class="text-gray-400 hover:text-white text-2xl font-black px-2">&times;</button>
+                </div>
+            </div>
+            <div id="petsInventoryList" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 overflow-y-auto my-4 p-1">
+                <!-- Dynamic Content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. BOSS SELECTION MODAL -->
+    <div id="bossModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="roblox-panel w-full max-w-2xl rounded-3xl p-5 border-4 border-red-600 flex flex-col max-h-[85vh]">
+            <div class="flex items-center justify-between pb-3 border-b-2 border-slate-700">
+                <h2 class="text-2xl font-black text-red-500 flex items-center gap-2">
+                    <i class="fa-solid fa-skull"></i> DANH SÁCH BOSS ANIME
+                </h2>
+                <button onclick="closeModal('bossModal')" class="text-gray-400 hover:text-white text-2xl font-black px-2">&times;</button>
+            </div>
+            <div id="bossesList" class="space-y-3 overflow-y-auto my-4 p-1">
+                <!-- Dynamic Content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. MAP SELECTION MODAL -->
+    <div id="mapModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="roblox-panel w-full max-w-2xl rounded-3xl p-5 border-4 border-cyan-500 flex flex-col max-h-[85vh]">
+            <div class="flex items-center justify-between pb-3 border-b-2 border-slate-700">
+                <h2 class="text-2xl font-black text-cyan-400 flex items-center gap-2">
+                    <i class="fa-solid fa-map"></i> BẢN ĐỒ THẾ GIỚI
+                </h2>
+                <button onclick="closeModal('mapModal')" class="text-gray-400 hover:text-white text-2xl font-black px-2">&times;</button>
+            </div>
+            <div id="mapsList" class="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto my-4 p-1">
+                <!-- Dynamic Content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. REBIRTH MODAL -->
+    <div id="rebirthModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="roblox-panel w-full max-w-md rounded-3xl p-6 border-4 border-purple-600 text-center flex flex-col items-center">
+            <i class="fa-solid fa-arrows-rotate text-6xl text-purple-400 my-2 animate-spin"></i>
+            <h2 class="text-3xl font-black text-yellow-300 tracking-wide mt-2">CHUYỂN SINH (REBIRTH)</h2>
+            <p class="text-sm text-gray-300 mt-2">Reset chỉ số <span class="text-red-400 font-bold">Strength</span> để nhận bội số sức mạnh vĩnh viễn và Hào Quang Aura!</p>
+            
+            <div class="bg-slate-900/90 rounded-2xl p-4 w-full my-4 border border-purple-500/30 text-left space-y-2">
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-400">Yêu cầu Strength:</span>
+                    <span id="rebirthReqStrength" class="font-bold text-red-400">10,000</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-400">Multi hiện tại:</span>
+                    <span id="rebirthCurrentMulti" class="font-bold text-purple-300">x1</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-400">Multi tiếp theo:</span>
+                    <span id="rebirthNextMulti" class="font-bold text-green-400">x3 (+200%)</span>
+                </div>
+            </div>
+
+            <div class="flex gap-3 w-full">
+                <button onclick="closeModal('rebirthModal')" class="roblox-btn w-1/2 bg-gray-700 border-2 border-gray-500 font-bold py-3 rounded-2xl text-sm">HỦY</button>
+                <button onclick="executeRebirth()" class="roblox-btn w-1/2 bg-gradient-to-r from-purple-600 to-pink-600 border-2 border-purple-300 text-white font-black py-3 rounded-2xl text-sm shadow-neon-blue">REBIRTH</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. ACTIVE BOSS BATTLE SCREEN OVERLAY -->
+    <div id="bossBattleOverlay" class="hidden fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-between p-5 md:p-8">
+        <!-- Top Battle Header -->
+        <div class="w-full max-w-xl text-center space-y-2">
+            <div class="text-amber-400 font-black text-sm md:text-base uppercase tracking-widest flex items-center justify-center gap-2">
+                <i class="fa-solid fa-skull-crossbones text-red-500"></i> CHIẾN ĐẤU BOSS ANIME <i class="fa-solid fa-skull-crossbones text-red-500"></i>
+            </div>
+            <h2 id="battleBossName" class="text-3xl md:text-5xl font-black text-red-500 text-stroke tracking-wide">KAKASHI</h2>
+            
+            <!-- Boss HP Progress Bar -->
+            <div class="w-full bg-slate-900 border-4 border-slate-800 rounded-2xl h-10 relative overflow-hidden shadow-roblox my-2">
+                <div id="bossHpBar" class="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 h-full w-full transition-all duration-75"></div>
+                <div id="bossHpText" class="absolute inset-0 flex items-center justify-center font-black text-base md:text-lg text-stroke text-white">1,000 / 1,000 HP</div>
+            </div>
+
+            <!-- Dynamic Current Damage Info Indicator -->
+            <div class="bg-slate-900/80 border border-yellow-400/40 rounded-xl py-1.5 px-4 inline-block text-xs md:text-sm font-black text-yellow-300">
+                Sát Thương Bạo Kích Hiện Tại: <span id="currentBossDmgStat" class="text-red-400 text-base">0</span> Damage/Click
+            </div>
+            
+            <!-- Timer Countdown -->
+            <div class="text-sm md:text-lg font-bold text-gray-300">
+                Thời gian còn lại: <span id="bossTimerText" class="text-xl md:text-2xl font-black text-yellow-400">20</span>s
+            </div>
+        </div>
+
+        <!-- Center Boss Interactive Visual -->
+        <div id="bossVisualTarget" onclick="attackBoss(event)" class="my-auto text-center flex flex-col items-center justify-center cursor-pointer active:scale-95 transition-transform relative">
+            <i id="bossIconAnim" class="fa-solid fa-dragon text-9xl md:text-[11rem] text-red-600 animate-pulse drop-shadow-2xl"></i>
+            <div class="mt-4 bg-red-950/80 border border-red-500/50 text-red-200 px-4 py-1.5 rounded-full text-xs font-bold shadow-neon-red">
+                <i class="fa-solid fa-hand-pointer mr-1"></i> Bấm trực tiếp vào Boss hoặc nút phía dưới để chém!
+            </div>
+        </div>
+
+        <!-- Big Attack Button -->
+        <button onclick="attackBoss(event)" class="roblox-btn w-full max-w-md bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 border-4 border-yellow-300 text-slate-950 font-black py-4 md:py-5 rounded-3xl text-2xl md:text-3xl shadow-neon-gold tracking-widest uppercase">
+            <i class="fa-solid fa-hand-fist mr-2"></i> TẤN CÔNG BOSS!
+        </button>
+    </div>
+
+    <!-- 8. GACHA REVEAL ANIMATION MODAL -->
+    <div id="gachaRevealModal" class="hidden fixed inset-0 z-50 bg-slate-950/95 flex flex-col items-center justify-center p-4">
+        <!-- Box Opening Graphic -->
+        <div id="gachaBoxContainer" class="text-center space-y-6">
+            <div id="gachaBoxGraphic" class="text-9xl text-yellow-400 gacha-rainbow-anim inline-block">
+                <i class="fa-solid fa-box-archive"></i>
+            </div>
+            <h3 id="gachaBoxStatus" class="text-2xl md:text-3xl font-black text-white tracking-widest uppercase animate-pulse">ĐANG MỞ HỘP MÙ ANIME...</h3>
+        </div>
+
+        <!-- Hatch Result Pet Card -->
+        <div id="gachaPetCard" class="hidden text-center flex-col items-center max-w-sm w-full roblox-panel rounded-3xl p-6 border-4 border-yellow-400 shadow-neon-gold">
+            <div id="petRarityBadge" class="bg-purple-600 text-white font-black text-xs px-3.5 py-1 rounded-full uppercase mb-2">MYTHIC (0.9%)</div>
+            <i id="petCardIcon" class="fa-solid fa-user-ninja text-8xl text-yellow-300 my-4"></i>
+            <h2 id="petCardName" class="text-3xl font-black text-white text-stroke mb-1">Naruto Sage</h2>
+            <div id="petCardBonus" class="space-y-1 my-3">
+                <p id="petCardStatCPS" class="text-emerald-400 font-bold text-base">+1,200 Cash/s</p>
+                <p id="petCardStatStr" class="text-red-400 font-bold text-sm">+50% Strength Bonus</p>
+            </div>
+            <button onclick="closeGachaReveal()" class="roblox-btn w-full bg-gradient-to-r from-green-500 to-emerald-600 text-slate-950 font-black py-3 rounded-2xl shadow-roblox text-lg mt-2">NHẬN NGAY</button>
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT GAME LOGIC ==================== -->
+    <script>
+        /* --- WEB AUDIO SYNTHESIZER --- */
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioCtx();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playSound(type) {
+            try {
+                initAudio();
+                if (!audioCtx) return;
+
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'train') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.exponentialRampToValueAtTime(450, now + 0.08);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'click') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(650, now);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'buy') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'hatch') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(350, now);
+                    osc.frequency.exponentialRampToValueAtTime(900, now + 0.35);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'boss_hit') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.exponentialRampToValueAtTime(60, now + 0.1);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'boss_win') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.1);
+                    osc.frequency.setValueAtTime(783.99, now + 0.2);
+                    osc.frequency.setValueAtTime(1046.50, now + 0.3);
+                    gain.gain.setValueAtTime(0.35, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                }
+            } catch (e) {
+                console.log("Audio play error:", e);
+            }
+        }
+
+        /* --- GAME DATA DEFINITIONS --- */
+        const GAME_DATA = {
+            weights: [
+                { id: 'w1', name: 'Tạ Rơm Làng Lá', power: 1, cost: 0, icon: 'fa-wheat-awn' },
+                { id: 'w2', name: 'Tạ Đơn Ninja', power: 6, cost: 120, icon: 'fa-dumbbell' },
+                { id: 'w3', name: 'Tạ Đá Cổ Đại', power: 30, cost: 1500, icon: 'fa-gem' },
+                { id: 'w4', name: 'Tạ Lôi Thần', power: 180, cost: 25000, icon: 'fa-bolt' },
+                { id: 'w5', name: 'Quả Cầu Linh Hồn', power: 1200, cost: 400000, icon: 'fa-circle-notch' },
+                { id: 'w6', name: 'Tạ Siêu Tinh Tú', power: 8500, cost: 10000000, icon: 'fa-sun' },
+                { id: 'w7', name: 'Lõi Tinh Cầu', power: 60000, cost: 250000000, icon: 'fa-globe' },
+                { id: 'w8', name: 'Lỗ Đen Vũ Trụ', power: 500000, cost: 6000000000, icon: 'fa-atom' }
+            ],
+            maps: [
+                { id: 0, name: 'Làng Lá (Naruto)', cost: 0, bg: 'naruto', color: '#f97316' },
+                { id: 1, name: 'Thành Shiganshina (AOT)', cost: 100000, bg: 'aot', color: '#b91c1c' },
+                { id: 2, name: 'Đảo Kame (Dragon Ball)', cost: 25000000, bg: 'dbz', color: '#0284c7' },
+                { id: 3, name: 'Núi Tử Đằng (Demon Slayer)', cost: 1000000000, bg: 'slayer', color: '#a855f7' }
+            ],
+            boxes: [
+                {
+                    id: 'b1', mapId: 0, name: 'Shinobi Box', cost: 150, icon: 'fa-box-archive', color: 'border-orange-500',
+                    pets: [
+                        { name: 'Dân Làng Lá', rarity: 'Common', chance: 50, cps: 5, strBonus: 0, icon: 'fa-user-ninja', color: 'text-gray-300' },
+                        { name: 'Chouji', rarity: 'Rare', chance: 30, cps: 25, strBonus: 0.10, icon: 'fa-cookie-bite', color: 'text-blue-400' },
+                        { name: 'Kakashi', rarity: 'Epic', chance: 14, cps: 150, strBonus: 0.25, icon: 'fa-mask', color: 'text-purple-400' },
+                        { name: 'Naruto Sage', rarity: 'Mythic', chance: 0.9, cps: 1200, strBonus: 0.50, icon: 'fa-fire-flame-curved', color: 'text-cyan-400' },
+                        { name: 'Baryon Naruto', rarity: 'Secret', chance: 0.1, cps: 10000, strBonus: 1.50, icon: 'fa-dragon', color: 'text-red-500' }
+                    ]
+                },
+                {
+                    id: 'b2', mapId: 1, name: 'Scout Box', cost: 25000, icon: 'fa-box-tissue', color: 'border-red-600',
+                    pets: [
+                        { name: 'Dân Shiganshina', rarity: 'Common', chance: 50, cps: 300, strBonus: 0.15, icon: 'fa-user', color: 'text-gray-300' },
+                        { name: 'Jean', rarity: 'Rare', chance: 30, cps: 1800, strBonus: 0.30, icon: 'fa-horse', color: 'text-blue-400' },
+                        { name: 'Mikasa', rarity: 'Epic', chance: 14, cps: 12000, strBonus: 0.70, icon: 'fa-feather', color: 'text-purple-400' },
+                        { name: 'Eren Titan', rarity: 'Mythic', chance: 0.9, cps: 90000, strBonus: 1.50, icon: 'fa-hand-fist', color: 'text-cyan-400' },
+                        { name: 'Founding Titan', rarity: 'Secret', chance: 0.1, cps: 750000, strBonus: 4.00, icon: 'fa-skull', color: 'text-red-500' }
+                    ]
+                },
+                {
+                    id: 'b3', mapId: 2, name: 'Z-Fighter Box', cost: 5000000, icon: 'fa-box', color: 'border-blue-500',
+                    pets: [
+                        { name: 'Saibaman', rarity: 'Common', chance: 50, cps: 25000, strBonus: 0.50, icon: 'fa-bug', color: 'text-gray-300' },
+                        { name: 'Krillin', rarity: 'Rare', chance: 30, cps: 150000, strBonus: 1.00, icon: 'fa-circle', color: 'text-blue-400' },
+                        { name: 'Vegeta', rarity: 'Epic', chance: 14, cps: 1000000, strBonus: 2.00, icon: 'fa-crown', color: 'text-purple-400' },
+                        { name: 'Goku SSJ', rarity: 'Mythic', chance: 0.9, cps: 8000000, strBonus: 5.00, icon: 'fa-bolt', color: 'text-cyan-400' },
+                        { name: 'UI Goku', rarity: 'Secret', chance: 0.1, cps: 65000000, strBonus: 15.00, icon: 'fa-star', color: 'text-red-500' }
+                    ]
+                },
+                {
+                    id: 'b4', mapId: 3, name: 'Slayer Box', cost: 500000000, icon: 'fa-toolbox', color: 'border-purple-600',
+                    pets: [
+                        { name: 'Murata', rarity: 'Common', chance: 50, cps: 2000000, strBonus: 1.50, icon: 'fa-user-shield', color: 'text-gray-300' },
+                        { name: 'Zenitsu', rarity: 'Rare', chance: 30, cps: 15000000, strBonus: 3.50, icon: 'fa-bolt-lightning', color: 'text-blue-400' },
+                        { name: 'Rengoku', rarity: 'Epic', chance: 14, cps: 100000000, strBonus: 8.00, icon: 'fa-fire', color: 'text-purple-400' },
+                        { name: 'Nezuko Demon', rarity: 'Mythic', chance: 0.9, cps: 800000000, strBonus: 20.00, icon: 'fa-heart', color: 'text-cyan-400' },
+                        { name: 'Sun Tanjiro', rarity: 'Secret', chance: 0.1, cps: 6000000000, strBonus: 50.00, icon: 'fa-sun', color: 'text-red-500' }
+                    ]
+                }
+            ],
+            bosses: [
+                { id: 'boss1', mapId: 0, name: 'Kakashi Hatake', reqHp: 200, rewardCash: 500, rewardBoxId: 'b1', icon: 'fa-mask' },
+                { id: 'boss2', mapId: 0, name: 'Cửu Vĩ Kurama', reqHp: 2500, rewardCash: 5000, rewardBoxId: 'b1', icon: 'fa-dragon' },
+                { id: 'boss3', mapId: 1, name: 'Titan Bọc Thép', reqHp: 50000, rewardCash: 100000, rewardBoxId: 'b2', icon: 'fa-shield' },
+                { id: 'boss4', mapId: 1, name: 'Titan Khổng Lồ', reqHp: 750000, rewardCash: 1500000, rewardBoxId: 'b2', icon: 'fa-skull' },
+                { id: 'boss5', mapId: 2, name: 'Trùm Frieza', reqHp: 20000000, rewardCash: 35000000, rewardBoxId: 'b3', icon: 'fa-meteor' },
+                { id: 'boss6', mapId: 2, name: 'Chiến Binh Jiren', reqHp: 500000000, rewardCash: 800000000, rewardBoxId: 'b3', icon: 'fa-khanda' },
+                { id: 'boss7', mapId: 3, name: 'Thượng Huyền Akaza', reqHp: 10000000000, rewardCash: 15000000000, rewardBoxId: 'b4', icon: 'fa-gem' },
+                { id: 'boss8', mapId: 3, name: 'Chúa Quỷ Muzan', reqHp: 250000000000, rewardCash: 400000000000, rewardBoxId: 'b4', icon: 'fa-spaghetti-monster-flying' }
+            ]
+        };
+
+        /* --- GAME STATE --- */
+        let gameState = {
+            strength: 0,
+            cash: 0,
+            rebirths: 0,
+            currentMap: 0,
+            unlockedMaps: [0],
+            equippedWeight: 'w1',
+            inventoryWeights: ['w1'],
+            inventoryPets: [],
+            autoTrain: false
+        };
+
+        // Number Formatter (1K, 1M, 1B, 1T, 1Qa...)
+        function formatNum(num) {
+            if (num < 1000) return Math.floor(num).toLocaleString();
+            const suffixes = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'];
+            const i = Math.floor(Math.log10(num) / 3);
+            if (i >= suffixes.length) return num.toExponential(2);
+            const formatted = (num / Math.pow(10, i * 3)).toFixed(2);
+            return formatted + suffixes[i];
+        }
+
+        /* --- LOCAL STORAGE --- */
+        function saveGame() {
+            try {
+                localStorage.setItem('anime_sim_strength_save', JSON.stringify(gameState));
+            } catch (e) { console.error(e); }
+        }
+
+        function loadGame() {
+            try {
+                const data = localStorage.getItem('anime_sim_strength_save');
+                if (data) gameState = { ...gameState, ...JSON.parse(data) };
+            } catch (e) { console.error(e); }
+        }
+
+        /* --- CORE STAT CALCULATIONS --- */
+        
+        // Strength Multiplier from Equipped Pets
+        function getPetStrengthMulti() {
+            let bonus = 0;
+            gameState.inventoryPets.forEach(p => {
+                if (p.equipped && p.strBonus) {
+                    bonus += p.strBonus;
+                }
+            });
+            return 1 + bonus;
+        }
+
+        // Strength Gain per Click
+        function getStrengthPerClick() {
+            const weightObj = GAME_DATA.weights.find(w => w.id === gameState.equippedWeight) || GAME_DATA.weights[0];
+            const rebirthMulti = 1 + (gameState.rebirths * 2.0);
+            const petMulti = getPetStrengthMulti();
+            return Math.floor(weightObj.power * rebirthMulti * petMulti);
+        }
+
+        // Cash per Second from Equipped Pets
+        function getCashPerSec() {
+            const baseCPS = gameState.inventoryPets
+                .filter(p => p.equipped)
+                .reduce((sum, p) => sum + p.cps, 0);
+            const rebirthMulti = 1 + (gameState.rebirths * 0.5);
+            return Math.floor(baseCPS * rebirthMulti);
+        }
+
+        // CRITICAL REQUIREMENT: Boss Damage equals STRENGTH!
+        function getBossDamagePerClick() {
+            const petMulti = getPetStrengthMulti();
+            // Minimum 1 damage for fresh players with 0 strength
+            const dmg = Math.max(1, Math.floor(gameState.strength * petMulti));
+            return dmg;
+        }
+
+        /* --- CORE ACTIONS --- */
+
+        // Train Action
+        function doTrain(event) {
+            initAudio();
+            const gain = getStrengthPerClick();
+            gameState.strength += gain;
+            playSound('train');
+            
+            // Visual floating text
+            const x = event && event.clientX ? event.clientX : window.innerWidth / 2;
+            const y = event && event.clientY ? event.clientY : window.innerHeight / 2;
+            createFloatingText(`+${formatNum(gain)} Str`, x, y, '#ffea00');
+            
+            // Animate canvas character
+            liftWeightAnim = 1.0;
+            
+            updateUI();
+        }
+
+        // Auto Train Toggle
+        function toggleAutoTrain() {
+            initAudio();
+            gameState.autoTrain = !gameState.autoTrain;
+            const btn = document.getElementById('btnAutoTrain');
+            const icon = document.getElementById('iconAutoTrain');
+            const text = document.getElementById('textAutoTrain');
+            
+            if (gameState.autoTrain) {
+                btn.classList.add('bg-gradient-to-b', 'from-emerald-500', 'to-green-700', 'border-green-300');
+                btn.classList.remove('from-gray-700', 'to-gray-900', 'border-gray-600');
+                icon.className = "fa-solid fa-robot text-xl text-yellow-300 animate-spin";
+                text.innerText = "Auto Train: ON";
+            } else {
+                btn.classList.remove('from-emerald-500', 'to-green-700', 'border-green-300');
+                btn.classList.add('from-gray-700', 'to-gray-900', 'border-gray-600');
+                icon.className = "fa-solid fa-robot text-xl text-gray-400";
+                text.innerText = "Auto Train: OFF";
+            }
+        }
+
+        // Rebirth Execution
+        function executeRebirth() {
+            const req = Math.floor(10000 * Math.pow(3.0, gameState.rebirths));
+            if (gameState.strength >= req) {
+                gameState.strength = 0;
+                gameState.rebirths += 1;
+                playSound('boss_win');
+                closeModal('rebirthModal');
+                createFloatingText("REBIRTH CẤP TĂNG!", window.innerWidth/2, window.innerHeight/2, '#a855f7');
+                updateUI();
+                saveGame();
+            } else {
+                alert("Bạn chưa đủ Strength để Rebirth!");
+            }
+        }
+
+        /* --- BOSS BATTLE SYSTEM WITH STRENGTH SCALED DAMAGE --- */
+        let activeBoss = null;
+        let activeBossHp = 0;
+        let bossBattleTimer = null;
+        let bossTimeLeft = 20;
+
+        function startBossBattle(bossId) {
+            const boss = GAME_DATA.bosses.find(b => b.id === bossId);
+            if (!boss) return;
+
+            activeBoss = boss;
+            activeBossHp = boss.reqHp;
+            bossTimeLeft = 20;
+
+            closeModal('bossModal');
+            document.getElementById('bossBattleOverlay').classList.remove('hidden');
+            document.getElementById('battleBossName').innerText = boss.name;
+            document.getElementById('bossIconAnim').className = `fa-solid ${boss.icon} text-9xl md:text-[11rem] text-red-500 animate-pulse drop-shadow-2xl`;
+
+            updateBossHpUI();
+
+            // Start Countdown Timer
+            clearInterval(bossBattleTimer);
+            bossBattleTimer = setInterval(() => {
+                bossTimeLeft -= 1;
+                document.getElementById('bossTimerText').innerText = bossTimeLeft;
+                if (bossTimeLeft <= 0) {
+                    endBossBattle(false);
+                }
+            }, 1000);
+        }
+
+        // ATTACK BOSS METHOD - DAMAGE = STRENGTH!
+        function attackBoss(event) {
+            if (!activeBoss) return;
+            
+            const dmg = getBossDamagePerClick();
+            activeBossHp -= dmg;
+            playSound('boss_hit');
+
+            // Floating Damage Number directly over click spot or center boss
+            const x = event && event.clientX ? event.clientX : window.innerWidth / 2;
+            const y = event && event.clientY ? event.clientY : window.innerHeight / 2;
+            createFloatingText(`-${formatNum(dmg)}`, x, y, '#ff2a55');
+            
+            if (activeBossHp <= 0) {
+                activeBossHp = 0;
+                endBossBattle(true);
+            }
+            updateBossHpUI();
+        }
+
+        function updateBossHpUI() {
+            if (!activeBoss) return;
+            const pct = Math.max(0, (activeBossHp / activeBoss.reqHp) * 100);
+            document.getElementById('bossHpBar').style.width = pct + '%';
+            document.getElementById('bossHpText').innerText = `${formatNum(activeBossHp)} / ${formatNum(activeBoss.reqHp)} HP`;
+            document.getElementById('currentBossDmgStat').innerText = formatNum(getBossDamagePerClick());
+        }
+
+        function endBossBattle(isWin) {
+            clearInterval(bossBattleTimer);
+            document.getElementById('bossBattleOverlay').classList.add('hidden');
+
+            if (isWin) {
+                playSound('boss_win');
+                gameState.cash += activeBoss.rewardCash;
+                
+                // Reward Box Auto Roll
+                const box = GAME_DATA.boxes.find(b => b.id === activeBoss.rewardBoxId);
+                alert(`VICTORY! Bạn đã hạ gục ${activeBoss.name}!\nPhần thưởng: +${formatNum(activeBoss.rewardCash)} Cash + 1 Hộp Mù!`);
+                
+                if (box) {
+                    rollPetFromBox(box, true); // free box hatch reward
+                }
+            } else {
+                alert(`THẤT BẠI! Bạn chưa hạ gục được ${activeBoss.name} trong 20s. Hãy tập tạ tăng Strength để quay lại!`);
+            }
+
+            activeBoss = null;
+            updateUI();
+            saveGame();
+        }
+
+        /* --- GACHA & PETS LOGIC --- */
+        function openBox(boxId) {
+            const box = GAME_DATA.boxes.find(b => b.id === boxId);
+            if (!box) return;
+
+            if (gameState.cash < box.cost) {
+                alert("Bạn không đủ Cash để mở Hộp Mù này!");
+                return;
+            }
+
+            gameState.cash -= box.cost;
+            updateUI();
+            closeModal('gachaModal');
+
+            rollPetFromBox(box, false);
+        }
+
+        function rollPetFromBox(box, isFreeReward) {
+            document.getElementById('gachaRevealModal').classList.remove('hidden');
+            document.getElementById('gachaBoxContainer').classList.remove('hidden');
+            document.getElementById('gachaPetCard').classList.add('hidden');
+            document.getElementById('gachaPetCard').classList.remove('flex');
+
+            playSound('hatch');
+
+            setTimeout(() => {
+                const rand = Math.random() * 100;
+                let cumulative = 0;
+                let selectedPet = box.pets[0];
+
+                for (let pet of box.pets) {
+                    cumulative += pet.chance;
+                    if (rand <= cumulative) {
+                        selectedPet = pet;
+                        break;
+                    }
+                }
+
+                // Add to inventory
+                const newPet = {
+                    uid: 'pet_' + Date.now() + '_' + Math.floor(Math.random()*1000),
+                    name: selectedPet.name,
+                    rarity: selectedPet.rarity,
+                    cps: selectedPet.cps,
+                    strBonus: selectedPet.strBonus,
+                    icon: selectedPet.icon,
+                    color: selectedPet.color,
+                    equipped: false
+                };
+                gameState.inventoryPets.push(newPet);
+
+                // Auto equip if slots available
+                const equippedCount = gameState.inventoryPets.filter(p => p.equipped).length;
+                if (equippedCount < 3) {
+                    newPet.equipped = true;
+                }
+
+                // Reveal Pet Card UI
+                document.getElementById('gachaBoxContainer').classList.add('hidden');
+                const card = document.getElementById('gachaPetCard');
+                card.classList.remove('hidden');
+                card.classList.add('flex');
+
+                document.getElementById('petRarityBadge').innerText = `${selectedPet.rarity} (${selectedPet.chance}%)`;
+                document.getElementById('petCardIcon').className = `fa-solid ${selectedPet.icon} text-8xl ${selectedPet.color} my-4`;
+                document.getElementById('petCardName').innerText = selectedPet.name;
+                document.getElementById('petCardStatCPS').innerText = `+${formatNum(selectedPet.cps)} Cash/s`;
+                document.getElementById('petCardStatStr').innerText = `+${Math.floor(selectedPet.strBonus * 100)}% Strength Bonus`;
+
+                playSound('boss_win');
+                saveGame();
+            }, 1600);
+        }
+
+        function closeGachaReveal() {
+            document.getElementById('gachaRevealModal').classList.add('hidden');
+            updateUI();
+        }
+
+        function togglePetEquip(uid) {
+            const pet = gameState.inventoryPets.find(p => p.uid === uid);
+            if (!pet) return;
+
+            if (!pet.equipped) {
+                const currentlyEquipped = gameState.inventoryPets.filter(p => p.equipped).length;
+                if (currentlyEquipped >= 3) {
+                    alert("Bạn chỉ có thể trang bị tối đa 3 nhân vật cùng lúc!");
+                    return;
+                }
+                pet.equipped = true;
+            } else {
+                pet.equipped = false;
+            }
+            playSound('click');
+            renderPetsModal();
+            updateUI();
+        }
+
+        function equipBestPets() {
+            gameState.inventoryPets.forEach(p => p.equipped = false);
+            // Sort by CPS + strBonus
+            const sorted = [...gameState.inventoryPets].sort((a,b) => (b.cps + b.strBonus*10000) - (a.cps + a.strBonus*10000));
+            for (let i = 0; i < Math.min(3, sorted.length); i++) {
+                sorted[i].equipped = true;
+            }
+            playSound('buy');
+            renderPetsModal();
+            updateUI();
+        }
+
+        /* --- SHOP & MAP TELEPORT --- */
+        function buyWeight(weightId) {
+            const w = GAME_DATA.weights.find(item => item.id === weightId);
+            if (!w) return;
+
+            if (gameState.inventoryWeights.includes(w.id)) {
+                gameState.equippedWeight = w.id;
+                playSound('click');
+            } else if (gameState.cash >= w.cost) {
+                gameState.cash -= w.cost;
+                gameState.inventoryWeights.push(w.id);
+                gameState.equippedWeight = w.id;
+                playSound('buy');
+            } else {
+                alert("Bạn không đủ Cash để mua Tạ này!");
+            }
+            renderShopModal();
+            updateUI();
+            saveGame();
+        }
+
+        function travelMap(mapId) {
+            const m = GAME_DATA.maps.find(item => item.id === mapId);
+            if (!m) return;
+
+            if (gameState.unlockedMaps.includes(m.id)) {
+                gameState.currentMap = m.id;
+                playSound('click');
+            } else if (gameState.cash >= m.cost) {
+                gameState.cash -= m.cost;
+                gameState.unlockedMaps.push(m.id);
+                gameState.currentMap = m.id;
+                playSound('buy');
+            } else {
+                alert("Bạn không đủ Cash để mở khóa Bản đồ này!");
+            }
+            renderMapModal();
+            updateUI();
+            saveGame();
+        }
+
+        /* --- RENDER MODAL UI --- */
+        function openModal(modalId) {
+            initAudio();
+            playSound('click');
+            document.getElementById(modalId).classList.remove('hidden');
+
+            if (modalId === 'shopModal') renderShopModal();
+            if (modalId === 'gachaModal') renderGachaModal();
+            if (modalId === 'petsModal') renderPetsModal();
+            if (modalId === 'bossModal') renderBossModal();
+            if (modalId === 'mapModal') renderMapModal();
+            if (modalId === 'rebirthModal') renderRebirthModal();
+        }
+
+        function closeModal(modalId) {
+            playSound('click');
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function renderShopModal() {
+            const container = document.getElementById('weightsList');
+            container.innerHTML = GAME_DATA.weights.map(w => {
+                const owned = gameState.inventoryWeights.includes(w.id);
+                const equipped = gameState.equippedWeight === w.id;
+
+                return `
+                    <div class="bg-slate-900/90 border-2 ${equipped ? 'border-yellow-400 bg-yellow-950/20' : 'border-slate-700'} rounded-2xl p-3 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid ${w.icon} text-3xl text-yellow-400"></i>
+                            <div>
+                                <div class="font-bold text-white text-sm">${w.name}</div>
+                                <div class="text-xs text-red-400 font-semibold">+${formatNum(w.power)} Strength/Click</div>
+                                <div class="text-[11px] text-emerald-400">${owned ? 'Đã sở hữu' : 'Giá: ' + formatNum(w.cost) + ' Cash'}</div>
+                            </div>
+                        </div>
+                        <button onclick="buyWeight('${w.id}')" class="roblox-btn px-3 py-1.5 rounded-xl text-xs font-black ${equipped ? 'bg-yellow-400 text-black' : owned ? 'bg-blue-600 text-white' : 'bg-emerald-600 text-white'} shadow-roblox">
+                            ${equipped ? 'ĐANG DÙNG' : owned ? 'TRANG BỊ' : 'MUA'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderGachaModal() {
+            const container = document.getElementById('boxesList');
+            container.innerHTML = GAME_DATA.boxes.map(b => {
+                return `
+                    <div class="bg-slate-900/90 border-4 ${b.color} rounded-2xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <span class="font-black text-lg text-white">${b.name}</span>
+                                <i class="fa-solid ${b.icon} text-2xl text-pink-400"></i>
+                            </div>
+                            <div class="text-xs text-emerald-400 font-bold my-1">Giá: ${formatNum(b.cost)} Cash</div>
+                            <div class="text-[10px] text-gray-400 space-y-0.5 my-2">
+                                ${b.pets.map(p => `<div><span class="${p.color} font-bold">${p.rarity}</span>: ${p.name} (+${formatNum(p.cps)}/s, +${Math.floor(p.strBonus*100)}% Str)</div>`).join('')}
+                            </div>
+                        </div>
+                        <button onclick="openBox('${b.id}')" class="roblox-btn w-full bg-gradient-to-r from-pink-500 to-rose-600 text-white font-black py-2 rounded-xl text-xs shadow-roblox mt-2">
+                            MỞ HỘP (${formatNum(b.cost)} CASH)
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderPetsModal() {
+            const container = document.getElementById('petsInventoryList');
+            const equippedCount = gameState.inventoryPets.filter(p => p.equipped).length;
+            document.getElementById('petEquipedCount').innerText = equippedCount;
+
+            if (gameState.inventoryPets.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center text-gray-400 py-8 text-sm">Bạn chưa có Nhân vật đồng hành nào! Hãy mở Hộp Mù để nhận.</div>`;
+                return;
+            }
+
+            container.innerHTML = gameState.inventoryPets.map(p => {
+                return `
+                    <div class="bg-slate-900/90 border-2 ${p.equipped ? 'border-emerald-400 bg-emerald-950/30' : 'border-slate-700'} rounded-2xl p-3 flex flex-col items-center text-center justify-between">
+                        <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-slate-800 ${p.color}">${p.rarity}</span>
+                        <i class="fa-solid ${p.icon} text-4xl ${p.color} my-2"></i>
+                        <div class="font-bold text-xs text-white truncate w-full">${p.name}</div>
+                        <div class="text-[10px] text-emerald-400 font-bold">+${formatNum(p.cps)}/s</div>
+                        <div class="text-[10px] text-red-400 font-bold mb-2">+${Math.floor((p.strBonus||0)*100)}% Str</div>
+                        <button onclick="togglePetEquip('${p.uid}')" class="roblox-btn w-full py-1 rounded-xl text-[10px] font-black ${p.equipped ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'} shadow-roblox">
+                            ${p.equipped ? 'THÁO RA' : 'TRANG BỊ'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderBossModal() {
+            const container = document.getElementById('bossesList');
+            const currentMapBosses = GAME_DATA.bosses.filter(b => b.mapId === gameState.currentMap);
+
+            container.innerHTML = currentMapBosses.map(b => {
+                const currentDmg = getBossDamagePerClick();
+
+                return `
+                    <div class="bg-slate-900/90 border-2 border-red-900/60 rounded-2xl p-3.5 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid ${b.icon} text-3xl text-red-500"></i>
+                            <div>
+                                <div class="font-black text-white text-base">${b.name}</div>
+                                <div class="text-xs text-red-400">Boss HP: ${formatNum(b.reqHp)}</div>
+                                <div class="text-[11px] text-emerald-400">Thưởng: ${formatNum(b.rewardCash)} Cash + Hộp Mù</div>
+                            </div>
+                        </div>
+                        <button onclick="startBossBattle('${b.id}')" class="roblox-btn px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-neon-gold">
+                            KHIÊU CHIẾN
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderMapModal() {
+            const container = document.getElementById('mapsList');
+            container.innerHTML = GAME_DATA.maps.map(m => {
+                const unlocked = gameState.unlockedMaps.includes(m.id);
+                const current = gameState.currentMap === m.id;
+
+                return `
+                    <div class="bg-slate-900/90 border-2 ${current ? 'border-cyan-400 bg-cyan-950/20' : 'border-slate-700'} rounded-2xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="font-black text-lg text-white">${m.name}</div>
+                            <div class="text-xs text-emerald-400 font-bold my-1">${unlocked ? 'Đã Mở Khóa' : 'Giá: ' + formatNum(m.cost) + ' Cash'}</div>
+                        </div>
+                        <button onclick="travelMap(${m.id})" class="roblox-btn w-full py-2 rounded-xl text-xs font-black mt-3 ${current ? 'bg-cyan-400 text-slate-950' : unlocked ? 'bg-teal-600 text-white' : 'bg-emerald-600 text-white'} shadow-roblox">
+                            ${current ? 'ĐANG Ở ĐÂY' : unlocked ? 'DỊCH CHUYỂN' : 'MỞ KHÓA MAP'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderRebirthModal() {
+            const req = Math.floor(10000 * Math.pow(3.0, gameState.rebirths));
+            document.getElementById('rebirthReqStrength').innerText = formatNum(req);
+            document.getElementById('rebirthCurrentMulti').innerText = 'x' + (1 + gameState.rebirths * 2.0);
+            document.getElementById('rebirthNextMulti').innerText = 'x' + (1 + (gameState.rebirths + 1) * 2.0);
+        }
+
+        function updateUI() {
+            document.getElementById('statStrength').innerText = formatNum(gameState.strength);
+            document.getElementById('statCash').innerText = formatNum(gameState.cash);
+            document.getElementById('statRebirth').innerText = 'x' + (1 + gameState.rebirths * 2.0);
+            
+            const cps = getCashPerSec();
+            document.getElementById('statCPS').innerText = formatNum(cps);
+
+            const mapObj = GAME_DATA.maps.find(m => m.id === gameState.currentMap) || GAME_DATA.maps[0];
+            document.getElementById('mapBadge').innerText = mapObj.name;
+
+            const equippedPets = gameState.inventoryPets.filter(p => p.equipped).length;
+            document.getElementById('petEquipBadge').innerText = `${equippedPets}/3`;
+        }
+
+        // Floating Text FX
+        function createFloatingText(text, x, y, color = '#ffea00') {
+            const container = document.getElementById('floatingContainer');
+            const el = document.createElement('div');
+            el.className = 'float-dmg text-xl md:text-3xl font-black text-stroke';
+            el.style.left = (x - 30 + (Math.random()*40 - 20)) + 'px';
+            el.style.top = (y - 20) + 'px';
+            el.style.color = color;
+            el.innerText = text;
+            container.appendChild(el);
+
+            setTimeout(() => {
+                if (el.parentNode) el.parentNode.removeChild(el);
+            }, 850);
+        }
+
+        /* --- CANVAS 2D ANIMATION ENGINE --- */
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let liftWeightAnim = 0;
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function createParticle() {
+            const mapId = gameState.currentMap;
+            let color = '#f97316';
+            if (mapId === 1) color = '#ef4444';
+            if (mapId === 2) color = '#38bdf8';
+            if (mapId === 3) color = '#c084fc';
+
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: canvas.height + 10,
+                vx: (Math.random() - 0.5) * 1.5,
+                vy: -(Math.random() * 2.2 + 1),
+                size: Math.random() * 6 + 3,
+                color: color,
+                alpha: 1
+            });
+        }
+
+        function renderCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const mapId = gameState.currentMap;
+            const width = canvas.width;
+            const height = canvas.height;
+
+            // Background Gradients Per Map
+            let bgGradient = ctx.createLinearGradient(0, 0, 0, height);
+            if (mapId === 0) {
+                bgGradient.addColorStop(0, '#15803d');
+                bgGradient.addColorStop(0.6, '#166534');
+                bgGradient.addColorStop(1, '#052e16');
+            } else if (mapId === 1) {
+                bgGradient.addColorStop(0, '#7f1d1d');
+                bgGradient.addColorStop(0.6, '#450a0a');
+                bgGradient.addColorStop(1, '#18181b');
+            } else if (mapId === 2) {
+                bgGradient.addColorStop(0, '#0284c7');
+                bgGradient.addColorStop(0.6, '#0369a1');
+                bgGradient.addColorStop(1, '#0c4a6e');
+            } else if (mapId === 3) {
+                bgGradient.addColorStop(0, '#581c87');
+                bgGradient.addColorStop(0.6, '#3b0764');
+                bgGradient.addColorStop(1, '#0f172a');
+            }
+            ctx.fillStyle = bgGradient;
+            ctx.fillRect(0, 0, width, height);
+
+            // Ground Layer
+            ctx.fillStyle = '#090d16';
+            ctx.fillRect(0, height * 0.72, width, height * 0.28);
+            ctx.fillStyle = 'rgba(255,255,255,0.06)';
+            ctx.fillRect(0, height * 0.72, width, 6);
+
+            // Environmental Particles
+            if (Math.random() < 0.4) createParticle();
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= 0.006;
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, p.alpha);
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                if (p.alpha <= 0 || p.y < -10) particles.splice(i, 1);
+            }
+
+            // Avatar & Rebirth Aura Render
+            const centerX = width / 2;
+            const centerY = height * 0.65;
+
+            // Aura Ring
+            if (gameState.rebirths > 0) {
+                const time = Date.now() * 0.003;
+                ctx.save();
+                ctx.strokeStyle = gameState.rebirths > 3 ? '#ff2a55' : '#a855f7';
+                ctx.lineWidth = 4;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = ctx.strokeStyle;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY - 20, 75 + Math.sin(time) * 10, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Roblox Blocky Figure
+            ctx.save();
+            ctx.translate(centerX, centerY);
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.beginPath();
+            ctx.ellipse(0, 35, 45, 12, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Legs
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(-22, 0, 18, 35);
+            ctx.fillRect(4, 0, 18, 35);
+
+            // Torso
+            ctx.fillStyle = '#00a2ff';
+            ctx.fillRect(-24, -45, 48, 45);
+
+            // Head
+            ctx.fillStyle = '#fde047';
+            ctx.fillRect(-18, -80, 36, 32);
+
+            // Face
+            ctx.fillStyle = '#000';
+            ctx.fillRect(-10, -68, 5, 8);
+            ctx.fillRect(5, -68, 5, 8);
+            ctx.fillRect(-5, -55, 10, 3);
+
+            // Arms & Weight Lifting Motion
+            const armYOffset = liftWeightAnim > 0 ? -15 : 0;
+            liftWeightAnim = Math.max(0, liftWeightAnim - 0.08);
+
+            ctx.fillStyle = '#00a2ff';
+            ctx.fillRect(-35, -42 + armYOffset, 10, 30);
+            ctx.fillRect(25, -42 + armYOffset, 10, 30);
+
+            // Equipped Weight
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(-50, -25 + armYOffset, 100, 8);
+            ctx.fillStyle = '#dc2626';
+            ctx.fillRect(-58, -37 + armYOffset, 12, 32);
+            ctx.fillRect(46, -37 + armYOffset, 12, 32);
+
+            ctx.restore();
+
+            // Orbiting Pets
+            const equippedPets = gameState.inventoryPets.filter(p => p.equipped);
+            const petTime = Date.now() * 0.002;
+            equippedPets.forEach((pet, idx) => {
+                const angle = (idx / equippedPets.length) * Math.PI * 2 + petTime;
+                const petX = centerX + Math.cos(angle) * 110;
+                const petY = centerY - 30 + Math.sin(petTime * 2 + idx) * 12;
+
+                ctx.save();
+                ctx.fillStyle = '#1e293b';
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(petX, petY, 20, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 15px Fredoka';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(pet.name.charAt(0), petX, petY);
+                ctx.restore();
+            });
+
+            requestAnimationFrame(renderCanvas);
+        }
+
+        /* --- ENGINE INIT & LOOPS --- */
+        window.onload = function () {
+            loadGame();
+            updateUI();
+            renderCanvas();
+
+            // Click Area Trainer
+            document.getElementById('clickTargetArea').addEventListener('click', (e) => {
+                doTrain(e);
+            });
+
+            // Keyboard Spacebar Trigger
+            window.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    doTrain();
+                }
+            });
+
+            // 1 Second Interval for Income & Auto-Train
+            setInterval(() => {
+                const cps = getCashPerSec();
+                if (cps > 0) {
+                    gameState.cash += cps;
+                    updateUI();
+                }
+
+                if (gameState.autoTrain) {
+                    doTrain();
+                }
+            }, 1000);
+
+            // Auto Save Interval
+            setInterval(() => {
+                saveGame();
+            }, 10000);
+        };
+    </script>
+</body>
+</html>

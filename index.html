@@ -1,1316 +1,1484 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="h-full bg-slate-950 text-white">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Anime +1 Strength to Fight Anime - Roblox Simulator</title>
-    <!-- Tailwind CSS CDN -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime +1 Strength to Fight Anime - Realtime Multiplayer Simulator</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Fredoka & Outfit -->
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
     
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        roblox: ['Fredoka', 'sans-serif'],
-                        outfit: ['Outfit', 'sans-serif'],
-                    },
-                    colors: {
-                        robloxBlue: '#00a2ff',
-                        robloxGreen: '#00e676',
-                        robloxYellow: '#ffea00',
-                        robloxRed: '#ff2a55',
-                        robloxPurple: '#a855f7',
-                        robloxDark: '#0f172a',
-                    },
-                    boxShadow: {
-                        'roblox': '0 8px 0 rgba(0,0,0,0.4), 0 10px 15px rgba(0,0,0,0.5)',
-                        'roblox-sm': '0 4px 0 rgba(0,0,0,0.3)',
-                        'neon-blue': '0 0 20px #00a2ff',
-                        'neon-gold': '0 0 25px #ffea00',
-                        'neon-red': '0 0 25px #ff2a55',
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        body {
-            font-family: 'Fredoka', sans-serif;
+        * {
+            font-family: 'Fredoka', 'Outfit', sans-serif;
             user-select: none;
-            -webkit-user-select: none;
-            overflow: hidden;
-            background-color: #0b0f19;
         }
-        canvas {
-            image-rendering: pixelated;
+        body {
+            background: radial-gradient(circle at center, #1e1338 0%, #080512 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(23, 17, 43, 0.85);
+            backdrop-filter: blur(14px);
+            border: 2px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+        }
+        .glass-card {
+            background: rgba(35, 27, 61, 0.65);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.14);
         }
         .roblox-btn {
-            transition: all 0.08s ease;
-            transform: translateY(0);
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.4);
+        }
+        .roblox-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.15);
         }
         .roblox-btn:active {
             transform: translateY(4px);
-            box-shadow: 0 2px 0 rgba(0,0,0,0.4) !important;
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
         }
-        .roblox-panel {
-            background: rgba(15, 23, 42, 0.92);
-            backdrop-filter: blur(14px);
-            border: 4px solid rgba(255, 255, 255, 0.18);
+        .boss-card-selected {
+            border: 3px solid #eab308 !important;
+            box-shadow: 0 0 22px rgba(234, 179, 8, 0.55);
+            background: rgba(60, 48, 15, 0.85) !important;
         }
-        .text-stroke {
-            -webkit-text-stroke: 2px #000;
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(234, 179, 8, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(234, 179, 8, 0.85); }
         }
-        .text-stroke-sm {
-            -webkit-text-stroke: 1px #000;
+        .pulse-active {
+            animation: pulse-glow 2s infinite;
         }
-        ::-webkit-scrollbar {
-            width: 8px;
+        @keyframes float-up {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1.35); }
         }
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #00a2ff;
-            border-radius: 8px;
-        }
-        
-        /* Floating Damage and Stat Animations */
-        @keyframes floatDamageUp {
-            0% { opacity: 1; transform: translateY(0) scale(0.8) rotate(-5deg); }
-            30% { transform: translateY(-30px) scale(1.3) rotate(5deg); }
-            100% { opacity: 0; transform: translateY(-80px) scale(1) rotate(0deg); }
-        }
-        .float-dmg {
+        .damage-number {
             position: absolute;
+            animation: float-up 0.85s ease-out forwards;
             pointer-events: none;
-            animation: floatDamageUp 0.85s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
             font-weight: 900;
-            z-index: 100;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.8);
+            text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
         }
-
-        /* Gacha Box Glow Animation */
-        @keyframes gachaRainbowPulse {
-            0% { filter: drop-shadow(0 0 15px #00a2ff); transform: scale(1); }
-            33% { filter: drop-shadow(0 0 25px #ffea00); transform: scale(1.06); }
-            66% { filter: drop-shadow(0 0 25px #ff2a55); transform: scale(0.98); }
-            100% { filter: drop-shadow(0 0 15px #00a2ff); transform: scale(1); }
+        @keyframes boss-hit {
+            0% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(0.9) rotate(-5deg); filter: brightness(2) drop-shadow(0 0 20px red); }
+            50% { transform: scale(1.08) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); }
         }
-        .gacha-rainbow-anim {
-            animation: gachaRainbowPulse 1.2s infinite linear;
+        .hit-anim {
+            animation: boss-hit 0.2s ease-in-out;
         }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.25); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.45); }
     </style>
 </head>
-<body class="w-screen h-screen relative overflow-hidden bg-slate-950 text-white">
+<body class="min-h-screen flex flex-col justify-between p-2 sm:p-4 text-sm sm:text-base selection:bg-yellow-500 selection:text-black">
 
-    <!-- Interactive Background Canvas -->
-    <canvas id="gameCanvas" class="absolute inset-0 w-full h-full z-0"></canvas>
-
-    <!-- Floating Numbers Layer -->
-    <div id="floatingContainer" class="absolute inset-0 pointer-events-none z-10"></div>
-
-    <!-- MAIN GAME HUD LAYER -->
-    <div class="relative z-20 w-full h-full flex flex-col justify-between p-3 md:p-5 pointer-events-none">
-        
-        <!-- TOP STATS BAR -->
-        <div class="flex flex-wrap items-center justify-between gap-2 pointer-events-auto">
-            <!-- Left Side: Strength & Cash -->
-            <div class="flex items-center gap-2 md:gap-3 flex-wrap">
-                <!-- Strength Badge -->
-                <div class="flex items-center bg-gradient-to-r from-red-600 via-orange-500 to-amber-500 border-4 border-red-950 rounded-2xl px-3 py-1.5 shadow-roblox">
-                    <i class="fa-solid fa-dumbbell text-2xl text-yellow-300 mr-2.5 drop-shadow"></i>
-                    <div>
-                        <div class="text-[10px] md:text-xs font-black uppercase tracking-wider text-red-100">STRENGTH</div>
-                        <div id="statStrength" class="text-lg md:text-2xl font-black text-stroke text-white leading-none">0</div>
-                    </div>
+    <!-- TOP HEADER -->
+    <header class="w-full max-w-7xl mx-auto glass-panel rounded-2xl p-3 sm:p-4 mb-4 flex flex-wrap items-center justify-between gap-3 relative z-20">
+        <!-- Player Info & Name Change -->
+        <div class="flex items-center gap-3">
+            <div class="relative">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-2xl shadow-md border border-white/20">
+                    <i class="fa-solid fa-user-ninja text-yellow-300"></i>
                 </div>
-
-                <!-- Cash Badge -->
-                <div class="flex items-center bg-gradient-to-r from-emerald-600 to-green-500 border-4 border-green-950 rounded-2xl px-3 py-1.5 shadow-roblox">
-                    <i class="fa-solid fa-money-bill-wave text-2xl text-yellow-300 mr-2.5 drop-shadow"></i>
-                    <div>
-                        <div class="text-[10px] md:text-xs font-black uppercase tracking-wider text-green-100">CASH</div>
-                        <div id="statCash" class="text-lg md:text-2xl font-black text-stroke text-white leading-none">0</div>
-                    </div>
-                </div>
-
-                <!-- Cash Per Second -->
-                <div class="hidden sm:flex items-center bg-slate-900/90 border-2 border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-emerald-400 shadow-lg">
-                    <i class="fa-solid fa-bolt mr-1.5 text-yellow-400"></i>
-                    +<span id="statCPS">0</span> Cash/s
-                </div>
-            </div>
-
-            <!-- Right Side: Rebirth & Current Map -->
-            <div class="flex items-center gap-2">
-                <!-- Rebirth Badge -->
-                <div class="flex items-center bg-gradient-to-r from-purple-600 to-indigo-600 border-4 border-purple-950 rounded-2xl px-3 py-1.5 shadow-roblox">
-                    <i class="fa-solid fa-arrows-rotate text-2xl text-purple-200 mr-2 drop-shadow"></i>
-                    <div>
-                        <div class="text-[10px] md:text-xs font-black uppercase tracking-wider text-purple-200">REBIRTH</div>
-                        <div id="statRebirth" class="text-lg md:text-2xl font-black text-stroke text-white leading-none">x1</div>
-                    </div>
-                </div>
-
-                <!-- Current Map Name -->
-                <div id="mapBadge" class="bg-amber-500 border-4 border-amber-800 text-slate-950 font-black rounded-2xl px-3.5 py-2 text-xs md:text-sm shadow-roblox uppercase">
-                    Map 1: Làng Lá
-                </div>
-            </div>
-        </div>
-
-        <!-- CENTER CLICK AREA FOR TRAINING -->
-        <div id="clickTargetArea" class="absolute inset-0 m-auto w-full max-w-xl h-96 flex flex-col items-center justify-center pointer-events-auto cursor-pointer">
-            <div class="bg-slate-950/70 backdrop-blur-md px-5 py-2.5 rounded-full border-2 border-yellow-400/50 text-white font-bold text-sm shadow-neon-gold pointer-events-none mb-48 flex items-center gap-2">
-                <i class="fa-solid fa-hand-pointer text-yellow-300 animate-bounce"></i> Click hoặc nhấn SPACE để tập tạ tăng Strength!
-            </div>
-        </div>
-
-        <!-- BOTTOM CONTROL BAR & MENU BUTTONS -->
-        <div class="w-full flex flex-col md:flex-row items-center justify-between gap-3 pointer-events-auto z-30">
-            
-            <!-- Left Side Actions -->
-            <div class="flex items-center gap-2 w-full md:w-auto justify-center">
-                <!-- Auto-Train Button -->
-                <button id="btnAutoTrain" onclick="toggleAutoTrain()" class="roblox-btn bg-gradient-to-b from-gray-700 to-gray-900 border-4 border-gray-600 text-white font-black px-4 py-3 rounded-2xl shadow-roblox flex items-center gap-2">
-                    <i id="iconAutoTrain" class="fa-solid fa-robot text-xl text-gray-400"></i>
-                    <span id="textAutoTrain" class="text-xs md:text-sm uppercase">Auto Train: OFF</span>
-                </button>
-
-                <!-- Rebirth Modal Button -->
-                <button onclick="openModal('rebirthModal')" class="roblox-btn bg-gradient-to-b from-purple-500 to-purple-800 border-4 border-purple-950 text-white font-black px-4 py-3 rounded-2xl shadow-roblox flex items-center gap-2">
-                    <i class="fa-solid fa-angles-up text-xl text-yellow-300"></i>
-                    <span class="text-xs md:text-sm uppercase">Rebirth</span>
+                <button onclick="openNameModal()" title="Đổi Tên Nhân Vật" class="absolute -bottom-1 -right-1 bg-yellow-500 text-black w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold hover:bg-yellow-400 border border-black shadow">
+                    <i class="fa-solid fa-pen"></i>
                 </button>
             </div>
-
-            <!-- Big Manual Train Button -->
-            <button onclick="doTrain(event)" class="roblox-btn w-full md:w-72 bg-gradient-to-b from-yellow-400 via-amber-500 to-red-600 border-4 border-yellow-950 text-slate-950 font-black py-4 rounded-2xl shadow-neon-gold text-2xl flex items-center justify-center gap-2 tracking-wider">
-                <i class="fa-solid fa-fire text-red-950 text-3xl"></i>
-                <span>TẬP LỰC (+STR)</span>
-            </button>
-
-            <!-- Menu Navigation Buttons -->
-            <div class="flex items-center gap-2 flex-wrap justify-center w-full md:w-auto">
-                <!-- Shop Tạ -->
-                <button onclick="openModal('shopModal')" class="roblox-btn bg-gradient-to-b from-blue-500 to-blue-700 border-4 border-blue-950 text-white font-black p-3.5 rounded-2xl shadow-roblox flex flex-col items-center w-16">
-                    <i class="fa-solid fa-dumbbell text-xl text-yellow-300"></i>
-                    <span class="text-[10px] mt-0.5">TẠ</span>
-                </button>
-
-                <!-- Hộp Mù (Gacha) -->
-                <button onclick="openModal('gachaModal')" class="roblox-btn bg-gradient-to-b from-pink-500 to-rose-700 border-4 border-rose-950 text-white font-black p-3.5 rounded-2xl shadow-roblox flex flex-col items-center w-16">
-                    <i class="fa-solid fa-box-open text-xl text-yellow-300"></i>
-                    <span class="text-[10px] mt-0.5">HỘP MÙ</span>
-                </button>
-
-                <!-- Pets Đồng Hành -->
-                <button onclick="openModal('petsModal')" class="roblox-btn bg-gradient-to-b from-emerald-500 to-emerald-700 border-4 border-emerald-950 text-white font-black p-3.5 rounded-2xl shadow-roblox flex flex-col items-center w-16 relative">
-                    <i class="fa-solid fa-paw text-xl text-yellow-300"></i>
-                    <span class="text-[10px] mt-0.5">PETS</span>
-                    <span id="petEquipBadge" class="absolute -top-1.5 -right-1.5 bg-yellow-400 text-black text-[9px] font-black rounded-full w-5 h-5 flex items-center justify-center border border-black shadow">0/3</span>
-                </button>
-
-                <!-- Đánh Boss -->
-                <button onclick="openModal('bossModal')" class="roblox-btn bg-gradient-to-b from-red-600 to-red-800 border-4 border-red-950 text-white font-black p-3.5 rounded-2xl shadow-roblox flex flex-col items-center w-16">
-                    <i class="fa-solid fa-skull text-xl text-yellow-300"></i>
-                    <span class="text-[10px] mt-0.5">BOSS</span>
-                </button>
-
-                <!-- Bản Đồ Maps -->
-                <button onclick="openModal('mapModal')" class="roblox-btn bg-gradient-to-b from-cyan-500 to-teal-700 border-4 border-teal-950 text-white font-black p-3.5 rounded-2xl shadow-roblox flex flex-col items-center w-16">
-                    <i class="fa-solid fa-map-location-dot text-xl text-yellow-300"></i>
-                    <span class="text-[10px] mt-0.5">MAPS</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ==================== MODALS LAYER ==================== -->
-
-    <!-- 1. SHOP TẠ MODAL -->
-    <div id="shopModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="roblox-panel w-full max-w-2xl rounded-3xl p-5 border-4 border-blue-500 flex flex-col max-h-[85vh]">
-            <div class="flex items-center justify-between pb-3 border-b-2 border-slate-700">
-                <h2 class="text-2xl font-black text-yellow-300 flex items-center gap-2">
-                    <i class="fa-solid fa-store"></i> CỬA HÀNG TẠ (WEIGHTS SHOP)
-                </h2>
-                <button onclick="closeModal('shopModal')" class="text-gray-400 hover:text-white text-2xl font-black px-2">&times;</button>
-            </div>
-            <div id="weightsList" class="grid grid-cols-1 sm:grid-cols-2 gap-3 overflow-y-auto my-4 p-1">
-                <!-- Dynamic Content -->
-            </div>
-        </div>
-    </div>
-
-    <!-- 2. HỘP MÙ (GACHA) MODAL -->
-    <div id="gachaModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="roblox-panel w-full max-w-2xl rounded-3xl p-5 border-4 border-pink-500 flex flex-col max-h-[85vh]">
-            <div class="flex items-center justify-between pb-3 border-b-2 border-slate-700">
-                <h2 class="text-2xl font-black text-pink-400 flex items-center gap-2">
-                    <i class="fa-solid fa-box-open"></i> HỘP MÙ ANIME (BLIND BOX)
-                </h2>
-                <button onclick="closeModal('gachaModal')" class="text-gray-400 hover:text-white text-2xl font-black px-2">&times;</button>
-            </div>
-            <div id="boxesList" class="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto my-4 p-1">
-                <!-- Dynamic Content -->
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. PETS / ANIME CHARACTERS MODAL -->
-    <div id="petsModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="roblox-panel w-full max-w-3xl rounded-3xl p-5 border-4 border-emerald-500 flex flex-col max-h-[85vh]">
-            <div class="flex items-center justify-between pb-3 border-b-2 border-slate-700 flex-wrap gap-2">
-                <h2 class="text-2xl font-black text-emerald-400 flex items-center gap-2">
-                    <i class="fa-solid fa-users"></i> ĐỒNG HÀNH ANIME (<span id="petEquipedCount">0</span>/3)
-                </h2>
+            <div>
                 <div class="flex items-center gap-2">
-                    <button onclick="equipBestPets()" class="roblox-btn bg-gradient-to-r from-yellow-500 to-amber-600 text-slate-950 font-black px-3.5 py-1.5 rounded-xl text-xs shadow-roblox">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> EQUIP BEST
+                    <h2 id="player-name-display" class="font-extrabold text-lg sm:text-xl text-yellow-300 tracking-wide">Player_123</h2>
+                    <span id="player-title" class="bg-purple-900/80 text-purple-200 text-[11px] px-2.5 py-0.5 rounded-full border border-purple-400/40 font-bold">Võ Sĩ Real</span>
+                </div>
+                <div class="text-xs text-gray-300 flex items-center gap-2 mt-0.5">
+                    <span class="text-emerald-400 font-bold flex items-center gap-1">
+                        <span id="online-badge" class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> Realtime Sync
+                    </span>
+                    <span>•</span>
+                    <span><i class="fa-solid fa-paw text-pink-400"></i> Pets: <strong id="pet-count-display" class="text-white">0/5</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Currencies & Active Weight Display -->
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+            <!-- Strength -->
+            <div class="glass-card px-3 py-1.5 rounded-xl flex items-center gap-2 border-red-500/30">
+                <div class="w-8 h-8 rounded-lg bg-red-600/80 flex items-center justify-center text-red-200 shadow">
+                    <i class="fa-solid fa-dumbbell text-lg"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] text-red-300 font-bold uppercase tracking-wider">Sức Mạnh</div>
+                    <div id="stat-strength" class="font-extrabold text-sm sm:text-base text-red-400">0</div>
+                </div>
+            </div>
+
+            <!-- Cash -->
+            <div class="glass-card px-3 py-1.5 rounded-xl flex items-center gap-2 border-yellow-500/30">
+                <div class="w-8 h-8 rounded-lg bg-yellow-600/80 flex items-center justify-center text-yellow-200 shadow">
+                    <i class="fa-solid fa-coins text-lg"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] text-yellow-300 font-bold uppercase tracking-wider">Tiền Xu</div>
+                    <div id="stat-cash" class="font-extrabold text-sm sm:text-base text-yellow-400">0</div>
+                </div>
+            </div>
+
+            <!-- Rebirth -->
+            <div class="glass-card px-3 py-1.5 rounded-xl flex items-center gap-2 border-blue-500/30">
+                <div class="w-8 h-8 rounded-lg bg-blue-600/80 flex items-center justify-center text-blue-200 shadow">
+                    <i class="fa-solid fa-rotate text-lg"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] text-blue-300 font-bold uppercase tracking-wider">Tái Sinh</div>
+                    <div id="stat-rebirth" class="font-extrabold text-sm sm:text-base text-blue-400">0</div>
+                </div>
+            </div>
+
+            <!-- Active Weight Display -->
+            <div class="glass-card px-3 py-1.5 rounded-xl flex items-center gap-2 border-amber-500/30">
+                <div class="w-8 h-8 rounded-lg bg-amber-600/80 flex items-center justify-center text-yellow-100 shadow">
+                    <span id="active-weight-icon" class="text-base">🏋️</span>
+                </div>
+                <div>
+                    <div class="text-[10px] text-amber-300 font-bold uppercase tracking-wider">Tạ Đang Dùng</div>
+                    <div id="active-weight-name" class="font-extrabold text-xs sm:text-sm text-amber-300 truncate max-w-[100px]">Tạ Nhựa</div>
+                </div>
+            </div>
+
+            <!-- Audio Toggle Button -->
+            <button id="sound-btn" onclick="toggleSound()" class="roblox-btn glass-card w-10 h-10 rounded-xl flex items-center justify-center text-gray-300 hover:text-white">
+                <i class="fa-solid fa-volume-high text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 mb-4">
+        
+        <!-- LEFT PANEL: MAP & BOSS SELECTION (SPAN 4) -->
+        <section class="lg:col-span-4 flex flex-col gap-3">
+            
+            <!-- Map Navigation Box -->
+            <div class="glass-panel rounded-2xl p-3 flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                    <div class="text-xs font-bold text-gray-400 uppercase tracking-widest"><i class="fa-solid fa-map-location-dot"></i> Bản Đồ Anime</div>
+                    <span id="map-indicator" class="text-xs bg-indigo-900/80 text-indigo-200 px-2.5 py-0.5 rounded-full font-bold border border-indigo-500/30">Map 1/8</span>
+                </div>
+                
+                <div class="flex items-center justify-between gap-2">
+                    <button onclick="changeMap(-1)" class="roblox-btn bg-purple-700 hover:bg-purple-600 text-white px-3 py-2 rounded-xl font-bold flex items-center justify-center">
+                        <i class="fa-solid fa-chevron-left"></i>
                     </button>
-                    <button onclick="closeModal('petsModal')" class="text-gray-400 hover:text-white text-2xl font-black px-2">&times;</button>
+                    
+                    <div class="flex-1 text-center bg-black/40 py-2 px-2 rounded-xl border border-white/10">
+                        <div id="map-name" class="font-black text-yellow-300 text-base sm:text-lg truncate">Làng Lá (Naruto)</div>
+                        <div id="map-unlock-status" class="text-xs text-green-400 font-semibold"><i class="fa-solid fa-lock-open"></i> Đã Mở Khóa</div>
+                    </div>
+                    
+                    <button onclick="changeMap(1)" class="roblox-btn bg-purple-700 hover:bg-purple-600 text-white px-3 py-2 rounded-xl font-bold flex items-center justify-center">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <!-- Unlock Next Map Button (Cost = 14x Boss 4 Cash from previous map) -->
+                <button id="unlock-map-btn" onclick="unlockCurrentMap()" class="hidden roblox-btn w-full bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-extrabold py-2.5 px-4 rounded-xl text-center shadow-lg flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-key text-yellow-300"></i>
+                    <span>Mở Khóa Map (<span id="unlock-cost-text">168K Cash</span>)</span>
+                </button>
+            </div>
+
+            <!-- BOSS SELECTION PANEL -->
+            <div class="glass-panel rounded-2xl p-3 sm:p-4 flex-1 flex flex-col">
+                <div class="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
+                    <h3 class="font-black text-yellow-400 flex items-center gap-2 text-base">
+                        <i class="fa-solid fa-skull-crossbones text-red-400"></i> CHỌN BOSS ĐỂ ĐÁNH
+                    </h3>
+                    <span class="text-[11px] bg-red-950/80 text-red-300 border border-red-500/30 px-2 py-0.5 rounded-md font-semibold">
+                        4 Boss / Map
+                    </span>
+                </div>
+
+                <!-- Boss Cards List -->
+                <div id="boss-list-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5 overflow-y-auto max-h-[440px] pr-1">
+                    <!-- Dynamic Boss Cards -->
                 </div>
             </div>
-            <div id="petsInventoryList" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 overflow-y-auto my-4 p-1">
-                <!-- Dynamic Content -->
-            </div>
-        </div>
-    </div>
+        </section>
 
-    <!-- 4. BOSS SELECTION MODAL -->
-    <div id="bossModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="roblox-panel w-full max-w-2xl rounded-3xl p-5 border-4 border-red-600 flex flex-col max-h-[85vh]">
-            <div class="flex items-center justify-between pb-3 border-b-2 border-slate-700">
-                <h2 class="text-2xl font-black text-red-500 flex items-center gap-2">
-                    <i class="fa-solid fa-skull"></i> DANH SÁCH BOSS ANIME
-                </h2>
-                <button onclick="closeModal('bossModal')" class="text-gray-400 hover:text-white text-2xl font-black px-2">&times;</button>
-            </div>
-            <div id="bossesList" class="space-y-3 overflow-y-auto my-4 p-1">
-                <!-- Dynamic Content -->
-            </div>
-        </div>
-    </div>
+        <!-- CENTER PANEL: COMBAT & TRAINING ARENA (SPAN 5) -->
+        <section class="lg:col-span-5 flex flex-col gap-3">
+            <div class="glass-panel rounded-2xl p-4 flex-1 flex flex-col items-center justify-between relative overflow-hidden min-h-[420px]">
+                
+                <!-- Arena Background Effects -->
+                <div id="arena-bg" class="absolute inset-0 bg-gradient-to-b from-indigo-950/40 via-purple-900/20 to-black/80 pointer-events-none"></div>
 
-    <!-- 5. MAP SELECTION MODAL -->
-    <div id="mapModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="roblox-panel w-full max-w-2xl rounded-3xl p-5 border-4 border-cyan-500 flex flex-col max-h-[85vh]">
-            <div class="flex items-center justify-between pb-3 border-b-2 border-slate-700">
-                <h2 class="text-2xl font-black text-cyan-400 flex items-center gap-2">
-                    <i class="fa-solid fa-map"></i> BẢN ĐỒ THẾ GIỚI
-                </h2>
-                <button onclick="closeModal('mapModal')" class="text-gray-400 hover:text-white text-2xl font-black px-2">&times;</button>
-            </div>
-            <div id="mapsList" class="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto my-4 p-1">
-                <!-- Dynamic Content -->
-            </div>
-        </div>
-    </div>
+                <!-- Boss Battle Header Display -->
+                <div class="w-full z-10 flex flex-col items-center gap-1">
+                    <div class="flex items-center gap-2">
+                        <span id="arena-boss-badge" class="bg-red-600 text-white text-xs font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow">Boss #1</span>
+                        <h2 id="arena-boss-name" class="font-black text-xl sm:text-2xl text-white tracking-wide shadow-text">Mizuki</h2>
+                    </div>
+                    
+                    <!-- Boss HP Bar -->
+                    <div class="w-full max-w-md bg-black/70 rounded-full h-6 p-1 border border-white/20 relative shadow-inner mt-1">
+                        <div id="boss-hp-bar" class="bg-gradient-to-r from-red-600 via-pink-600 to-red-500 h-full rounded-full transition-all duration-150 w-full"></div>
+                        <div id="boss-hp-text" class="absolute inset-0 flex items-center justify-center text-xs font-extrabold text-white drop-shadow-md">
+                            100 / 100 HP
+                        </div>
+                    </div>
+                </div>
 
-    <!-- 6. REBIRTH MODAL -->
-    <div id="rebirthModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="roblox-panel w-full max-w-md rounded-3xl p-6 border-4 border-purple-600 text-center flex flex-col items-center">
-            <i class="fa-solid fa-arrows-rotate text-6xl text-purple-400 my-2 animate-spin"></i>
-            <h2 class="text-3xl font-black text-yellow-300 tracking-wide mt-2">CHUYỂN SINH (REBIRTH)</h2>
-            <p class="text-sm text-gray-300 mt-2">Reset chỉ số <span class="text-red-400 font-bold">Strength</span> để nhận bội số sức mạnh vĩnh viễn và Hào Quang Aura!</p>
+                <!-- Character & Boss Visual Display Arena -->
+                <div id="arena-stage" class="relative w-full h-56 flex items-center justify-center gap-6 my-2 z-10">
+                    
+                    <!-- Player Visual Avatar -->
+                    <div class="flex flex-col items-center group cursor-pointer" onclick="clickTrain()">
+                        <div id="player-avatar" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-500 border-4 border-yellow-400/80 shadow-2xl flex items-center justify-center relative transition-transform duration-100 active:scale-95">
+                            <i class="fa-solid fa-user-ninja text-5xl text-yellow-300"></i>
+                            <!-- Active Weight Badge -->
+                            <div id="stage-weight-badge" class="absolute -top-3 -right-3 bg-amber-600 text-white w-9 h-9 rounded-full flex items-center justify-center text-base shadow-lg border-2 border-white animate-bounce">
+                                🏋️
+                            </div>
+                        </div>
+                        <span class="mt-2 text-xs font-bold bg-black/60 px-2.5 py-1 rounded-full text-yellow-300 border border-yellow-500/30">Bạn</span>
+                    </div>
+
+                    <!-- VS Glow Badge -->
+                    <div class="font-black text-2xl text-red-500 italic drop-shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse">
+                        VS
+                    </div>
+
+                    <!-- Selected Boss Visual Avatar -->
+                    <div class="flex flex-col items-center">
+                        <div id="boss-avatar-box" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-tr from-red-900 to-red-600 border-4 border-red-500 shadow-2xl flex items-center justify-center relative transition-all">
+                            <span id="boss-avatar-icon" class="text-5xl">🥷</span>
+                        </div>
+                        <span id="boss-reward-preview" class="mt-2 text-xs font-bold bg-black/60 px-2.5 py-1 rounded-full text-green-400 border border-green-500/30">+50 Cash</span>
+                    </div>
+
+                    <!-- Damage Numbers Overlay Container -->
+                    <div id="damage-container" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+                </div>
+
+                <!-- Action Buttons: Train & Attack -->
+                <div class="w-full grid grid-cols-2 gap-3 z-10">
+                    <!-- Manual Train Button -->
+                    <button onclick="clickTrain()" class="roblox-btn bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-black py-3.5 px-4 rounded-2xl shadow-lg flex flex-col items-center justify-center border-t border-white/30">
+                        <div class="flex items-center gap-2 text-base sm:text-lg">
+                            <i class="fa-solid fa-dumbbell text-yellow-300"></i> TẬP TẠ
+                        </div>
+                        <span id="train-gain-text" class="text-[11px] font-medium text-red-100 opacity-90">+1 Sức Mạnh/Click</span>
+                    </button>
+
+                    <!-- Manual Fight Boss Button -->
+                    <button onclick="clickFight()" class="roblox-btn bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-black font-black py-3.5 px-4 rounded-2xl shadow-lg flex flex-col items-center justify-center border-t border-white/40">
+                        <div class="flex items-center gap-2 text-base sm:text-lg">
+                            <i class="fa-solid fa-hand-fist text-red-900"></i> ĐÁNH BOSS
+                        </div>
+                        <span id="fight-dmg-text" class="text-[11px] font-bold text-amber-950 opacity-90">Sát Thương = Sức Mạnh</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT PANEL: TABS (PETS, WEIGHT SHOP, REBIRTH, LEADERBOARD) (SPAN 3) -->
+        <section class="lg:col-span-3 flex flex-col gap-3">
             
-            <div class="bg-slate-900/90 rounded-2xl p-4 w-full my-4 border border-purple-500/30 text-left space-y-2">
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-400">Yêu cầu Strength:</span>
-                    <span id="rebirthReqStrength" class="font-bold text-red-400">10,000</span>
+            <!-- Navigation Tabs Bar -->
+            <div class="glass-panel rounded-2xl p-1.5 flex gap-1 flex-wrap">
+                <button onclick="switchTab('pets')" id="tab-btn-pets" class="flex-1 py-1.5 px-2 rounded-xl font-extrabold text-xs transition-all bg-yellow-500 text-black shadow">
+                    <i class="fa-solid fa-paw"></i> Pets
+                </button>
+                <button onclick="switchTab('weights')" id="tab-btn-weights" class="flex-1 py-1.5 px-2 rounded-xl font-extrabold text-xs transition-all text-gray-300 hover:text-white">
+                    <i class="fa-solid fa-dumbbell"></i> Tạ
+                </button>
+                <button onclick="switchTab('rebirth')" id="tab-btn-rebirth" class="flex-1 py-1.5 px-2 rounded-xl font-extrabold text-xs transition-all text-gray-300 hover:text-white">
+                    <i class="fa-solid fa-bolt"></i> Rebirth
+                </button>
+                <button onclick="switchTab('leaderboard')" id="tab-btn-leaderboard" class="flex-1 py-1.5 px-2 rounded-xl font-extrabold text-xs transition-all text-gray-300 hover:text-white">
+                    <i class="fa-solid fa-trophy"></i> BXH
+                </button>
+            </div>
+
+            <!-- TAB CONTENT 1: PETS / LINH THÚ -->
+            <div id="tab-content-pets" class="glass-panel rounded-2xl p-3 flex-1 flex flex-col gap-2.5">
+                <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                    <div>
+                        <h3 class="font-extrabold text-pink-400 text-sm"><i class="fa-solid fa-box-open"></i> Hộp Mù Anime</h3>
+                        <p class="text-[10px] text-gray-300">Tăng % Sức Mạnh (Max 5 Con Trang Bị)</p>
+                    </div>
+                    <button onclick="hatchPet()" class="roblox-btn bg-pink-600 hover:bg-pink-500 text-white font-extrabold text-xs px-2.5 py-1.5 rounded-xl border border-pink-300/30">
+                        <i class="fa-solid fa-gift"></i> Mở ($<span id="hatch-cost-text">500</span>)
+                    </button>
                 </div>
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-400">Multi hiện tại:</span>
-                    <span id="rebirthCurrentMulti" class="font-bold text-purple-300">x1</span>
+
+                <!-- Equip Info & Bulk Delete Buttons -->
+                <div class="flex items-center justify-between gap-1 text-xs bg-black/40 p-1.5 rounded-xl border border-white/5">
+                    <span class="text-gray-300 text-[11px]">Trang bị: <strong id="equipped-counter" class="text-yellow-300">0/5</strong></span>
+                    <div class="flex items-center gap-1">
+                        <button onclick="autoEquipBestPets()" class="text-[10px] bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-1 rounded-lg font-bold">
+                            Trang Bị Tốt Nhất
+                        </button>
+                        <button onclick="openBulkDeleteModal()" class="text-[10px] bg-red-600 hover:bg-red-500 text-white px-2 py-1 rounded-lg font-bold" title="Xóa Pet Hàng Loạt">
+                            <i class="fa-solid fa-trash"></i> Xóa
+                        </button>
+                    </div>
                 </div>
-                <div class="flex justify-between text-sm">
-                    <span class="text-gray-400">Multi tiếp theo:</span>
-                    <span id="rebirthNextMulti" class="font-bold text-green-400">x3 (+200%)</span>
+
+                <!-- Pet Inventory List -->
+                <div id="pet-inventory-list" class="grid grid-cols-2 gap-2 overflow-y-auto max-h-[300px] pr-1 flex-1">
+                    <!-- Dynamic Pet Inventory Items -->
                 </div>
             </div>
 
-            <div class="flex gap-3 w-full">
-                <button onclick="closeModal('rebirthModal')" class="roblox-btn w-1/2 bg-gray-700 border-2 border-gray-500 font-bold py-3 rounded-2xl text-sm">HỦY</button>
-                <button onclick="executeRebirth()" class="roblox-btn w-1/2 bg-gradient-to-r from-purple-600 to-pink-600 border-2 border-purple-300 text-white font-black py-3 rounded-2xl text-sm shadow-neon-blue">REBIRTH</button>
+            <!-- TAB CONTENT 2: WEIGHT SHOP / CỬA HÀNG TẠ (13 TIERS) -->
+            <div id="tab-content-weights" class="glass-panel rounded-2xl p-3 flex-1 hidden flex-col gap-2.5">
+                <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                    <div>
+                        <h3 class="font-extrabold text-amber-400 text-sm"><i class="fa-solid fa-dumbbell"></i> Cửa Hàng Tạ (13 Cấp)</h3>
+                        <p class="text-[10px] text-gray-300">Mua Tạ nặng hơn để nhân bội số Sức Mạnh!</p>
+                    </div>
+                </div>
+
+                <!-- Weight List Container -->
+                <div id="weight-shop-list" class="space-y-2 overflow-y-auto max-h-[320px] pr-1 flex-1">
+                    <!-- Dynamic Weight Cards -->
+                </div>
+            </div>
+
+            <!-- TAB CONTENT 3: REBIRTH / TÁI SINH -->
+            <div id="tab-content-rebirth" class="glass-panel rounded-2xl p-3 flex-1 hidden flex-col gap-3">
+                <div class="text-center py-2">
+                    <i class="fa-solid fa-bolt-lightning text-4xl text-blue-400 animate-pulse mb-2"></i>
+                    <h3 class="font-black text-lg text-blue-300">HỆ THỐNG TÁI SINH</h3>
+                    <p class="text-xs text-gray-300 mt-1">
+                        Reset Sức Mạnh để nhận Multiplier vĩnh viễn cho mỗi lần nhấp!
+                    </p>
+                </div>
+
+                <div class="bg-black/50 p-3 rounded-xl border border-blue-500/20 space-y-2 text-xs">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Yêu Cầu Sức Mạnh:</span>
+                        <strong id="rebirth-req-text" class="text-red-400">10,000</strong>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Thưởng Multiplier:</span>
+                        <strong id="rebirth-boost-text" class="text-green-400">+100% Sức Mạnh</strong>
+                    </div>
+                </div>
+
+                <button onclick="doRebirth()" class="roblox-btn w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black py-3 rounded-xl text-center shadow-lg border border-blue-300/30 mt-auto">
+                    TÁI SINH NGAY!
+                </button>
+            </div>
+
+            <!-- TAB CONTENT 4: REAL-TIME LEADERBOARD (FIREBASE REAL PLAYERS ONLY) -->
+            <div id="tab-content-leaderboard" class="glass-panel rounded-2xl p-3 flex-1 hidden flex-col gap-2">
+                <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                    <div>
+                        <h3 class="font-black text-yellow-400 text-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-trophy"></i> BXH REALTIME (NGƯỜI CHƠI THẬT)
+                        </h3>
+                        <p class="text-[10px] text-gray-300">Được lưu trữ & đồng bộ qua Firebase</p>
+                    </div>
+                    <span id="lb-player-count" class="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded font-bold">
+                        0 Võ Sĩ
+                    </span>
+                </div>
+
+                <!-- Leaderboard Filter Tabs -->
+                <div class="flex gap-1 text-[11px] bg-black/40 p-1 rounded-lg">
+                    <button onclick="setLeaderboardSort('strength')" id="lbsort-strength" class="flex-1 py-1 rounded font-bold bg-yellow-500 text-black">
+                        Strength
+                    </button>
+                    <button onclick="setLeaderboardSort('rebirths')" id="lbsort-rebirths" class="flex-1 py-1 rounded font-bold text-gray-300 hover:text-white">
+                        Rebirth
+                    </button>
+                    <button onclick="setLeaderboardSort('cash')" id="lbsort-cash" class="flex-1 py-1 rounded font-bold text-gray-300 hover:text-white">
+                        Cash
+                    </button>
+                </div>
+
+                <div id="leaderboard-list" class="space-y-1.5 overflow-y-auto max-h-[290px] pr-1 flex-1">
+                    <!-- Dynamic Real Players List from Firebase -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- BOTTOM FOOTER & AUTOMATION CONTROLS -->
+    <footer class="w-full max-w-7xl mx-auto glass-panel rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 relative z-20">
+        <div class="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+            <i class="fa-solid fa-robot text-purple-400"></i> CHẾ ĐỘ TỰ ĐỘNG (AUTO)
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 sm:gap-4">
+            <!-- Auto Train -->
+            <label class="glass-card px-2.5 py-1.5 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-white/5 transition">
+                <input type="checkbox" id="auto-train-toggle" onchange="toggleAutoTrain(this.checked)" class="w-4 h-4 accent-red-500 rounded cursor-pointer">
+                <span class="text-xs font-extrabold text-red-300">Auto Train</span>
+            </label>
+
+            <!-- Auto Fight -->
+            <label class="glass-card px-2.5 py-1.5 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-white/5 transition">
+                <input type="checkbox" id="auto-fight-toggle" onchange="toggleAutoFight(this.checked)" class="w-4 h-4 accent-yellow-500 rounded cursor-pointer">
+                <span class="text-xs font-extrabold text-yellow-300">Auto Fight Boss</span>
+            </label>
+
+            <!-- Auto Buy Weight -->
+            <label class="glass-card px-2.5 py-1.5 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-white/5 transition">
+                <input type="checkbox" id="auto-weight-toggle" onchange="toggleAutoWeight(this.checked)" class="w-4 h-4 accent-amber-500 rounded cursor-pointer">
+                <span class="text-xs font-extrabold text-amber-300">Auto Buy Weight</span>
+            </label>
+
+            <!-- Auto Hatch -->
+            <label class="glass-card px-2.5 py-1.5 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-white/5 transition">
+                <input type="checkbox" id="auto-hatch-toggle" onchange="toggleAutoHatch(this.checked)" class="w-4 h-4 accent-pink-500 rounded cursor-pointer">
+                <span class="text-xs font-extrabold text-pink-300">Auto Hatch</span>
+            </label>
+        </div>
+    </footer>
+
+    <!-- MODAL 1: CHANGE PLAYER NAME -->
+    <div id="name-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md rounded-2xl p-5 border border-yellow-500/30 flex flex-col gap-4 shadow-2xl">
+            <div class="flex items-center justify-between">
+                <h3 class="font-black text-yellow-400 text-lg"><i class="fa-solid fa-id-card"></i> ĐỔI TÊN NHÂN VẬT</h3>
+                <button onclick="closeNameModal()" class="text-gray-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-xs text-gray-300">Tên của bạn sẽ được lưu trực tiếp lên Bảng Xếp Hạng Người Chơi Thật (Firebase)!</p>
+            <input type="text" id="new-name-input" maxlength="16" placeholder="Nhập tên nhân vật (Tối đa 16 ký tự)..." class="w-full bg-black/60 border border-white/20 rounded-xl px-4 py-3 text-yellow-200 font-bold focus:outline-none focus:border-yellow-400">
+            <div class="flex justify-end gap-2">
+                <button onclick="closeNameModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-gray-300 hover:bg-white/10">Hủy</button>
+                <button onclick="savePlayerName()" class="roblox-btn bg-yellow-500 hover:bg-yellow-400 text-black px-5 py-2.5 rounded-xl font-extrabold text-xs shadow-md">
+                    LƯU TÊN MỚI
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- 7. ACTIVE BOSS BATTLE SCREEN OVERLAY -->
-    <div id="bossBattleOverlay" class="hidden fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-between p-5 md:p-8">
-        <!-- Top Battle Header -->
-        <div class="w-full max-w-xl text-center space-y-2">
-            <div class="text-amber-400 font-black text-sm md:text-base uppercase tracking-widest flex items-center justify-center gap-2">
-                <i class="fa-solid fa-skull-crossbones text-red-500"></i> CHIẾN ĐẤU BOSS ANIME <i class="fa-solid fa-skull-crossbones text-red-500"></i>
-            </div>
-            <h2 id="battleBossName" class="text-3xl md:text-5xl font-black text-red-500 text-stroke tracking-wide">KAKASHI</h2>
+    <!-- MODAL 2: GACHA PET REVEAL -->
+    <div id="gacha-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-sm rounded-3xl p-6 border-2 border-pink-500/50 flex flex-col items-center text-center gap-4 shadow-[0_0_50px_rgba(236,72,153,0.4)]">
+            <h3 class="font-black text-pink-400 text-xl tracking-wider">HỘP MÙ LINH THÚ!</h3>
             
-            <!-- Boss HP Progress Bar -->
-            <div class="w-full bg-slate-900 border-4 border-slate-800 rounded-2xl h-10 relative overflow-hidden shadow-roblox my-2">
-                <div id="bossHpBar" class="bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 h-full w-full transition-all duration-75"></div>
-                <div id="bossHpText" class="absolute inset-0 flex items-center justify-center font-black text-base md:text-lg text-stroke text-white">1,000 / 1,000 HP</div>
+            <div id="gacha-icon-box" class="w-32 h-32 rounded-3xl bg-gradient-to-tr from-purple-800 to-pink-600 border-4 border-white flex items-center justify-center text-6xl shadow-2xl my-2 animate-bounce">
+                🎁
             </div>
 
-            <!-- Dynamic Current Damage Info Indicator -->
-            <div class="bg-slate-900/80 border border-yellow-400/40 rounded-xl py-1.5 px-4 inline-block text-xs md:text-sm font-black text-yellow-300">
-                Sát Thương Bạo Kích Hiện Tại: <span id="currentBossDmgStat" class="text-red-400 text-base">0</span> Damage/Click
+            <div id="gacha-result-details" class="hidden flex-col items-center gap-1">
+                <div id="gacha-pet-name" class="font-black text-2xl text-yellow-300">Linh Thú</div>
+                <div id="gacha-pet-rarity" class="text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest bg-purple-900 text-purple-200 border border-purple-400">MYTHIC</div>
+                <div id="gacha-pet-multiplier" class="text-sm font-extrabold text-green-400 mt-2">+50% Strength</div>
             </div>
-            
-            <!-- Timer Countdown -->
-            <div class="text-sm md:text-lg font-bold text-gray-300">
-                Thời gian còn lại: <span id="bossTimerText" class="text-xl md:text-2xl font-black text-yellow-400">20</span>s
-            </div>
-        </div>
 
-        <!-- Center Boss Interactive Visual -->
-        <div id="bossVisualTarget" onclick="attackBoss(event)" class="my-auto text-center flex flex-col items-center justify-center cursor-pointer active:scale-95 transition-transform relative">
-            <i id="bossIconAnim" class="fa-solid fa-dragon text-9xl md:text-[11rem] text-red-600 animate-pulse drop-shadow-2xl"></i>
-            <div class="mt-4 bg-red-950/80 border border-red-500/50 text-red-200 px-4 py-1.5 rounded-full text-xs font-bold shadow-neon-red">
-                <i class="fa-solid fa-hand-pointer mr-1"></i> Bấm trực tiếp vào Boss hoặc nút phía dưới để chém!
-            </div>
-        </div>
-
-        <!-- Big Attack Button -->
-        <button onclick="attackBoss(event)" class="roblox-btn w-full max-w-md bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 border-4 border-yellow-300 text-slate-950 font-black py-4 md:py-5 rounded-3xl text-2xl md:text-3xl shadow-neon-gold tracking-widest uppercase">
-            <i class="fa-solid fa-hand-fist mr-2"></i> TẤN CÔNG BOSS!
-        </button>
-    </div>
-
-    <!-- 8. GACHA REVEAL ANIMATION MODAL -->
-    <div id="gachaRevealModal" class="hidden fixed inset-0 z-50 bg-slate-950/95 flex flex-col items-center justify-center p-4">
-        <!-- Box Opening Graphic -->
-        <div id="gachaBoxContainer" class="text-center space-y-6">
-            <div id="gachaBoxGraphic" class="text-9xl text-yellow-400 gacha-rainbow-anim inline-block">
-                <i class="fa-solid fa-box-archive"></i>
-            </div>
-            <h3 id="gachaBoxStatus" class="text-2xl md:text-3xl font-black text-white tracking-widest uppercase animate-pulse">ĐANG MỞ HỘP MÙ ANIME...</h3>
-        </div>
-
-        <!-- Hatch Result Pet Card -->
-        <div id="gachaPetCard" class="hidden text-center flex-col items-center max-w-sm w-full roblox-panel rounded-3xl p-6 border-4 border-yellow-400 shadow-neon-gold">
-            <div id="petRarityBadge" class="bg-purple-600 text-white font-black text-xs px-3.5 py-1 rounded-full uppercase mb-2">MYTHIC (0.9%)</div>
-            <i id="petCardIcon" class="fa-solid fa-user-ninja text-8xl text-yellow-300 my-4"></i>
-            <h2 id="petCardName" class="text-3xl font-black text-white text-stroke mb-1">Naruto Sage</h2>
-            <div id="petCardBonus" class="space-y-1 my-3">
-                <p id="petCardStatCPS" class="text-emerald-400 font-bold text-base">+1,200 Cash/s</p>
-                <p id="petCardStatStr" class="text-red-400 font-bold text-sm">+50% Strength Bonus</p>
-            </div>
-            <button onclick="closeGachaReveal()" class="roblox-btn w-full bg-gradient-to-r from-green-500 to-emerald-600 text-slate-950 font-black py-3 rounded-2xl shadow-roblox text-lg mt-2">NHẬN NGAY</button>
+            <button id="gacha-close-btn" onclick="closeGachaModal()" class="hidden roblox-btn w-full bg-pink-600 hover:bg-pink-500 text-white font-black py-3 rounded-xl shadow-lg border border-pink-300/40 mt-2">
+                NHẬN LINH THÚ
+            </button>
         </div>
     </div>
 
-    <!-- ==================== JAVASCRIPT GAME LOGIC ==================== -->
-    <script>
-        /* --- WEB AUDIO SYNTHESIZER --- */
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        let audioCtx = null;
+    <!-- MODAL 3: BULK DELETE PETS -->
+    <div id="bulk-delete-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md rounded-2xl p-5 border border-red-500/40 flex flex-col gap-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                <h3 class="font-black text-red-400 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-trash-can"></i> XÓA PET HÀNG LOẠT
+                </h3>
+                <button onclick="closeBulkDeleteModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-xs text-gray-300">
+                Lưu ý: Tính năng này chỉ xóa các Pet <strong class="text-yellow-300">CHƯA TRANG BỊ</strong>. Các Pet đang được trang bị sẽ luôn được bảo vệ an toàn!
+            </p>
 
-        function initAudio() {
-            if (!audioCtx) audioCtx = new AudioCtx();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-        }
+            <div class="flex flex-col gap-2.5">
+                <button onclick="executeBulkDelete('Common')" class="roblox-btn w-full bg-amber-900/80 hover:bg-amber-800 text-amber-200 border border-amber-500/40 font-bold py-2.5 px-4 rounded-xl text-xs flex justify-between items-center">
+                    <span>Xóa Tất Cả Pet <strong class="text-amber-400">Common</strong> (Chưa trang bị)</span>
+                    <i class="fa-solid fa-trash text-sm"></i>
+                </button>
 
-        function playSound(type) {
+                <button onclick="executeBulkDelete('Rare')" class="roblox-btn w-full bg-blue-900/80 hover:bg-blue-800 text-blue-200 border border-blue-500/40 font-bold py-2.5 px-4 rounded-xl text-xs flex justify-between items-center">
+                    <span>Xóa Tất Cả Pet <strong class="text-blue-400">Rare</strong> (Chưa trang bị)</span>
+                    <i class="fa-solid fa-trash text-sm"></i>
+                </button>
+
+                <button onclick="executeBulkDelete('All')" class="roblox-btn w-full bg-red-800 hover:bg-red-700 text-white border border-red-400/40 font-extrabold py-3 px-4 rounded-xl text-xs flex justify-between items-center shadow-lg">
+                    <span>Xóa TOÀN BỘ Pet (Chưa trang bị)</span>
+                    <i class="fa-solid fa-fire text-sm"></i>
+                </button>
+            </div>
+
+            <button onclick="closeBulkDeleteModal()" class="w-full mt-1 py-2 text-xs font-bold text-gray-400 hover:text-white text-center">
+                Đóng
+            </button>
+        </div>
+    </div>
+
+    <!-- FIREBASE MODULES SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Setup following strict mandatory rules
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'anime-strength-sim';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : {
+                apiKey: "AIzaSyDemoConfigKeyForTestingPurposeOnly",
+                authDomain: "demo-app.firebaseapp.com",
+                projectId: "demo-app",
+                storageBucket: "demo-app.appspot.com",
+                messagingSenderId: "123456789",
+                appId: "1:123456789:web:demo"
+              };
+
+        let app, auth, db;
+        let isFirebaseActive = false;
+
+        async function initFirebase() {
             try {
-                initAudio();
-                if (!audioCtx) return;
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
 
-                const now = audioCtx.currentTime;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-
-                if (type === 'train') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(180, now);
-                    osc.frequency.exponentialRampToValueAtTime(450, now + 0.08);
-                    gain.gain.setValueAtTime(0.25, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
-                    osc.start(now);
-                    osc.stop(now + 0.08);
-                } else if (type === 'click') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(650, now);
-                    gain.gain.setValueAtTime(0.12, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-                    osc.start(now);
-                    osc.stop(now + 0.05);
-                } else if (type === 'buy') {
-                    osc.type = 'square';
-                    osc.frequency.setValueAtTime(523.25, now); // C5
-                    osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
-                    gain.gain.setValueAtTime(0.2, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-                    osc.start(now);
-                    osc.stop(now + 0.2);
-                } else if (type === 'hatch') {
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(350, now);
-                    osc.frequency.exponentialRampToValueAtTime(900, now + 0.35);
-                    gain.gain.setValueAtTime(0.3, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
-                    osc.start(now);
-                    osc.stop(now + 0.35);
-                } else if (type === 'boss_hit') {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(220, now);
-                    osc.frequency.exponentialRampToValueAtTime(60, now + 0.1);
-                    gain.gain.setValueAtTime(0.4, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                    osc.start(now);
-                    osc.stop(now + 0.1);
-                } else if (type === 'boss_win') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(523.25, now);
-                    osc.frequency.setValueAtTime(659.25, now + 0.1);
-                    osc.frequency.setValueAtTime(783.99, now + 0.2);
-                    osc.frequency.setValueAtTime(1046.50, now + 0.3);
-                    gain.gain.setValueAtTime(0.35, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-                    osc.start(now);
-                    osc.stop(now + 0.5);
+                // Authentication Rule 3
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
                 }
-            } catch (e) {
-                console.log("Audio play error:", e);
+
+                if (!auth.currentUser) return;
+
+                isFirebaseActive = true;
+                window.firebaseUserId = auth.currentUser.uid;
+
+                // Listen to Real-Time Leaderboard from Public Collection (Rule 1 & Rule 2)
+                const lbCol = collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard');
+                
+                onSnapshot(lbCol, (snapshot) => {
+                    const realPlayers = [];
+                    snapshot.forEach(docSnap => {
+                        const data = docSnap.data();
+                        if (data && data.name) {
+                            realPlayers.push(data);
+                        }
+                    });
+                    window.updateRealLeaderboardData(realPlayers);
+                }, (error) => {
+                    console.warn("Firestore listener note:", error.message);
+                });
+
+                // Trigger initial player sync
+                window.syncPlayerToFirestore = function() {
+                    if (!isFirebaseActive || !auth.currentUser) return;
+                    const userDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', auth.currentUser.uid);
+                    
+                    const payload = {
+                        uid: auth.currentUser.uid,
+                        name: window.gameState.playerName || "Võ Sĩ Real",
+                        strength: window.gameState.strength || 0,
+                        rebirths: window.gameState.rebirths || 0,
+                        cash: window.gameState.cash || 0,
+                        lastUpdated: Date.now()
+                    };
+
+                    setDoc(userDocRef, payload, { merge: true }).catch(err => console.warn("Firestore sync write error:", err));
+                };
+
+                window.syncPlayerToFirestore();
+
+            } catch (err) {
+                console.warn("Running in local mode without cloud sync:", err);
             }
         }
 
-        /* --- GAME DATA DEFINITIONS --- */
-        const GAME_DATA = {
-            weights: [
-                { id: 'w1', name: 'Tạ Rơm Làng Lá', power: 1, cost: 0, icon: 'fa-wheat-awn' },
-                { id: 'w2', name: 'Tạ Đơn Ninja', power: 6, cost: 120, icon: 'fa-dumbbell' },
-                { id: 'w3', name: 'Tạ Đá Cổ Đại', power: 30, cost: 1500, icon: 'fa-gem' },
-                { id: 'w4', name: 'Tạ Lôi Thần', power: 180, cost: 25000, icon: 'fa-bolt' },
-                { id: 'w5', name: 'Quả Cầu Linh Hồn', power: 1200, cost: 400000, icon: 'fa-circle-notch' },
-                { id: 'w6', name: 'Tạ Siêu Tinh Tú', power: 8500, cost: 10000000, icon: 'fa-sun' },
-                { id: 'w7', name: 'Lõi Tinh Cầu', power: 60000, cost: 250000000, icon: 'fa-globe' },
-                { id: 'w8', name: 'Lỗ Đen Vũ Trụ', power: 500000, cost: 6000000000, icon: 'fa-atom' }
+        window.addEventListener('DOMContentLoaded', initFirebase);
+    </script>
+
+    <script>
+        /* SOUND SYSTEM (Web Audio API Synthesizer) */
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('sound-btn');
+            btn.innerHTML = soundEnabled 
+                ? '<i class="fa-solid fa-volume-high text-lg"></i>' 
+                : '<i class="fa-solid fa-volume-xmark text-lg text-red-400"></i>';
+        }
+
+        function playTone(freq, type = 'sine', duration = 0.1, gainVal = 0.1) {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {}
+        }
+
+        function playTrainSound() { playTone(240, 'triangle', 0.08, 0.12); }
+        function playAttackSound() { playTone(160, 'sawtooth', 0.1, 0.18); }
+        function playVictorySound() {
+            if (!soundEnabled) return;
+            playTone(440, 'sine', 0.1, 0.12);
+            setTimeout(() => playTone(554, 'sine', 0.1, 0.12), 80);
+            setTimeout(() => playTone(659, 'sine', 0.2, 0.18), 160);
+        }
+        function playHatchSound() {
+            if (!soundEnabled) return;
+            playTone(523, 'sine', 0.08, 0.15);
+            setTimeout(() => playTone(659, 'sine', 0.08, 0.15), 90);
+            setTimeout(() => playTone(783, 'sine', 0.08, 0.15), 180);
+            setTimeout(() => playTone(1046, 'triangle', 0.25, 0.25), 270);
+        }
+
+        /* 13-TIER WEIGHT SHOP DATA */
+        const WEIGHTS_DATA = [
+            { id: 0, name: "Tạ Nhựa", baseStr: 1, cost: 0, icon: "🏋️" },
+            { id: 1, name: "Tạ Gang", baseStr: 5, cost: 100, icon: "⚙️" },
+            { id: 2, name: "Tạ Đòn Thi Đấu", baseStr: 25, cost: 1000, icon: "💈" },
+            { id: 3, name: "Tạ Đá Làng Lá", baseStr: 120, cost: 10000, icon: "🪨" },
+            { id: 4, name: "Tạ Thiết Giáp Titan", baseStr: 600, cost: 100000, icon: "🛡️" },
+            { id: 5, name: "Tạ Quả Cầu Năng Lượng", baseStr: 3500, cost: 1500000, icon: "🔮" },
+            { id: 6, name: "Tạ Tử Đằng Khổng Lồ", baseStr: 20000, cost: 25000000, icon: "🌸" },
+            { id: 7, name: "Tạ Stand Trọng Lực", baseStr: 120000, cost: 500000000, icon: "⏳" },
+            { id: 8, name: "Tạ Mỏ Neo Hải Tặc", baseStr: 800000, cost: 10000000000, icon: "⚓" },
+            { id: 9, name: "Tạ Đá Triết Học", baseStr: 5000000, cost: 250000000000, icon: "💎" },
+            { id: 10, name: "Tạ Bóng Tối S-Rank", baseStr: 35000000, cost: 8000000000000, icon: "🗡️" },
+            { id: 11, name: "Tạ Hành Tinh Nhỏ", baseStr: 250000000, cost: 300000000000000, icon: "🪐" },
+            { id: 12, name: "Tạ Hố Đen Vũ Trụ", baseStr: 2000000000, cost: 10000000000000000, icon: "🕳️" }
+        ];
+
+        /* 8 ANIME MAPS & 32 BOSSES DATA */
+        const MAPS_DATA = [
+            {
+                id: 1, name: "Làng Lá (Naruto)",
+                bosses: [
+                    { name: "Mizuki", hp: 100, cash: 50, icon: "🥷" },
+                    { name: "Zabuza", hp: 500, cash: 300, icon: "⚔️" },
+                    { name: "Pain", hp: 2500, cash: 1800, icon: "👁️" },
+                    { name: "Madara Uchiha", hp: 15000, cash: 12000, icon: "🔥" }
+                ]
+            },
+            {
+                id: 2, name: "Attack on Titan",
+                bosses: [
+                    { name: "Pure Titan", hp: 80000, cash: 15000, icon: "👹" },
+                    { name: "Beast Titan", hp: 350000, cash: 75000, icon: "🦍" },
+                    { name: "Armored Titan", hp: 1800000, cash: 450000, icon: "🛡️" },
+                    { name: "Eren Founding Titan", hp: 10000000, cash: 2500000, icon: "⚡" }
+                ]
+            },
+            {
+                id: 3, name: "Dragon Ball",
+                bosses: [
+                    { name: "Saibaman", hp: 50000000, cash: 3000000, icon: "🌱" },
+                    { name: "Nappa", hp: 250000000, cash: 18000000, icon: "💥" },
+                    { name: "Frieza", hp: 1200000000, cash: 100000000, icon: "👾" },
+                    { name: "Perfect Cell", hp: 8000000000, cash: 800000000, icon: "🦟" }
+                ]
+            },
+            {
+                id: 4, name: "Demon Slayer",
+                bosses: [
+                    { name: "Kyogai", hp: 40000000000, cash: 1000000000, icon: "🥁" },
+                    { name: "Rui", hp: 200000000000, cash: 6000000000, icon: "🕸️" },
+                    { name: "Akaza", hp: 1000000000000, cash: 35000000000, icon: "❄️" },
+                    { name: "Muzan Kibutsuji", hp: 6000000000000, cash: 250000000000, icon: "🩸" }
+                ]
+            },
+            {
+                id: 5, name: "JoJo's Bizarre Adventure",
+                bosses: [
+                    { name: "Anubis", hp: 30000000000000, cash: 400000000000, icon: "🗡️" },
+                    { name: "Yoshikage Kira", hp: 150000000000000, cash: 2200000000000, icon: "💣" },
+                    { name: "Diavolo", hp: 800000000000000, cash: 14000000000000, icon: "⏳" },
+                    { name: "DIO Brando", hp: 5000000000000000, cash: 100000000000000, icon: "🧛" }
+                ]
+            },
+            {
+                id: 6, name: "One Piece",
+                bosses: [
+                    { name: "Buggy", hp: 25000000000000000, cash: 150000000000000, icon: "🤡" },
+                    { name: "Arlong", hp: 120000000000000000, cash: 900000000000000, icon: "🦈" },
+                    { name: "Doflamingo", hp: 700000000000000000, cash: 6000000000000000, icon: "🦩" },
+                    { name: "Akainu", hp: 4000000000000000000, cash: 40000000000000000, icon: "🌋" }
+                ]
+            },
+            {
+                id: 7, name: "Fullmetal Alchemist",
+                bosses: [
+                    { name: "Gluttony", hp: 20000000000000000000, cash: 60000000000000000, icon: "🕳️" },
+                    { name: "Envy", hp: 100000000000000000000, cash: 350000000000000000, icon: "🦎" },
+                    { name: "Wrath", hp: 600000000000000000000, cash: 2500000000000000000, icon: "⚔️" },
+                    { name: "Father", hp: 3500000000000000000000, cash: 18000000000000000000, icon: "👑" }
+                ]
+            },
+            {
+                id: 8, name: "Solo Leveling",
+                bosses: [
+                    { name: "Cerberus", hp: 18000000000000000000000, cash: 25000000000000000000, icon: "🐕‍🦺" },
+                    { name: "Igris", hp: 100000000000000000000000, cash: 150000000000000000000, icon: "🛡️" },
+                    { name: "Beru", hp: 600000000000000000000000, cash: 1000000000000000000000, icon: "🐜" },
+                    { name: "Sung Jin-Woo Shadow Monarch", hp: 5000000000000000000000000, cash: 10000000000000000000000, icon: "👑" }
+                ]
+            }
+        ];
+
+        /* PET TEMPLATES FOR GACHA */
+        const PET_TEMPLATES = {
+            1: [
+                { name: "Cáo 9 Đuôi Mini", rarity: "Common", mult: 0.25, icon: "🦊", color: "text-amber-400" },
+                { name: "Cóc Gamabunta", rarity: "Rare", mult: 0.6, icon: "🐸", color: "text-blue-400" },
+                { name: "Rắn Mamba Aoda", rarity: "Epic", mult: 1.5, icon: "🐍", color: "text-purple-400" },
+                { name: "Cửu Vĩ Kurama", rarity: "Legendary", mult: 4.0, icon: "🔥", color: "text-red-500" }
             ],
-            maps: [
-                { id: 0, name: 'Làng Lá (Naruto)', cost: 0, bg: 'naruto', color: '#f97316' },
-                { id: 1, name: 'Thành Shiganshina (AOT)', cost: 100000, bg: 'aot', color: '#b91c1c' },
-                { id: 2, name: 'Đảo Kame (Dragon Ball)', cost: 25000000, bg: 'dbz', color: '#0284c7' },
-                { id: 3, name: 'Núi Tử Đằng (Demon Slayer)', cost: 1000000000, bg: 'slayer', color: '#a855f7' }
+            2: [
+                { name: "Titan Ngựa", rarity: "Common", mult: 0.5, icon: "🐴", color: "text-amber-400" },
+                { name: "Đại Bàng Tự Do", rarity: "Rare", mult: 1.2, icon: "🦅", color: "text-blue-400" },
+                { name: "Titan Nữ", rarity: "Epic", mult: 3.0, icon: "💃", color: "text-pink-400" },
+                { name: "Bạch Long Armored", rarity: "Legendary", mult: 8.0, icon: "🐉", color: "text-yellow-400" }
             ],
-            boxes: [
-                {
-                    id: 'b1', mapId: 0, name: 'Shinobi Box', cost: 150, icon: 'fa-box-archive', color: 'border-orange-500',
-                    pets: [
-                        { name: 'Dân Làng Lá', rarity: 'Common', chance: 50, cps: 5, strBonus: 0, icon: 'fa-user-ninja', color: 'text-gray-300' },
-                        { name: 'Chouji', rarity: 'Rare', chance: 30, cps: 25, strBonus: 0.10, icon: 'fa-cookie-bite', color: 'text-blue-400' },
-                        { name: 'Kakashi', rarity: 'Epic', chance: 14, cps: 150, strBonus: 0.25, icon: 'fa-mask', color: 'text-purple-400' },
-                        { name: 'Naruto Sage', rarity: 'Mythic', chance: 0.9, cps: 1200, strBonus: 0.50, icon: 'fa-fire-flame-curved', color: 'text-cyan-400' },
-                        { name: 'Baryon Naruto', rarity: 'Secret', chance: 0.1, cps: 10000, strBonus: 1.50, icon: 'fa-dragon', color: 'text-red-500' }
-                    ]
-                },
-                {
-                    id: 'b2', mapId: 1, name: 'Scout Box', cost: 25000, icon: 'fa-box-tissue', color: 'border-red-600',
-                    pets: [
-                        { name: 'Dân Shiganshina', rarity: 'Common', chance: 50, cps: 300, strBonus: 0.15, icon: 'fa-user', color: 'text-gray-300' },
-                        { name: 'Jean', rarity: 'Rare', chance: 30, cps: 1800, strBonus: 0.30, icon: 'fa-horse', color: 'text-blue-400' },
-                        { name: 'Mikasa', rarity: 'Epic', chance: 14, cps: 12000, strBonus: 0.70, icon: 'fa-feather', color: 'text-purple-400' },
-                        { name: 'Eren Titan', rarity: 'Mythic', chance: 0.9, cps: 90000, strBonus: 1.50, icon: 'fa-hand-fist', color: 'text-cyan-400' },
-                        { name: 'Founding Titan', rarity: 'Secret', chance: 0.1, cps: 750000, strBonus: 4.00, icon: 'fa-skull', color: 'text-red-500' }
-                    ]
-                },
-                {
-                    id: 'b3', mapId: 2, name: 'Z-Fighter Box', cost: 5000000, icon: 'fa-box', color: 'border-blue-500',
-                    pets: [
-                        { name: 'Saibaman', rarity: 'Common', chance: 50, cps: 25000, strBonus: 0.50, icon: 'fa-bug', color: 'text-gray-300' },
-                        { name: 'Krillin', rarity: 'Rare', chance: 30, cps: 150000, strBonus: 1.00, icon: 'fa-circle', color: 'text-blue-400' },
-                        { name: 'Vegeta', rarity: 'Epic', chance: 14, cps: 1000000, strBonus: 2.00, icon: 'fa-crown', color: 'text-purple-400' },
-                        { name: 'Goku SSJ', rarity: 'Mythic', chance: 0.9, cps: 8000000, strBonus: 5.00, icon: 'fa-bolt', color: 'text-cyan-400' },
-                        { name: 'UI Goku', rarity: 'Secret', chance: 0.1, cps: 65000000, strBonus: 15.00, icon: 'fa-star', color: 'text-red-500' }
-                    ]
-                },
-                {
-                    id: 'b4', mapId: 3, name: 'Slayer Box', cost: 500000000, icon: 'fa-toolbox', color: 'border-purple-600',
-                    pets: [
-                        { name: 'Murata', rarity: 'Common', chance: 50, cps: 2000000, strBonus: 1.50, icon: 'fa-user-shield', color: 'text-gray-300' },
-                        { name: 'Zenitsu', rarity: 'Rare', chance: 30, cps: 15000000, strBonus: 3.50, icon: 'fa-bolt-lightning', color: 'text-blue-400' },
-                        { name: 'Rengoku', rarity: 'Epic', chance: 14, cps: 100000000, strBonus: 8.00, icon: 'fa-fire', color: 'text-purple-400' },
-                        { name: 'Nezuko Demon', rarity: 'Mythic', chance: 0.9, cps: 800000000, strBonus: 20.00, icon: 'fa-heart', color: 'text-cyan-400' },
-                        { name: 'Sun Tanjiro', rarity: 'Secret', chance: 0.1, cps: 6000000000, strBonus: 50.00, icon: 'fa-sun', color: 'text-red-500' }
-                    ]
-                }
-            ],
-            bosses: [
-                { id: 'boss1', mapId: 0, name: 'Kakashi Hatake', reqHp: 200, rewardCash: 500, rewardBoxId: 'b1', icon: 'fa-mask' },
-                { id: 'boss2', mapId: 0, name: 'Cửu Vĩ Kurama', reqHp: 2500, rewardCash: 5000, rewardBoxId: 'b1', icon: 'fa-dragon' },
-                { id: 'boss3', mapId: 1, name: 'Titan Bọc Thép', reqHp: 50000, rewardCash: 100000, rewardBoxId: 'b2', icon: 'fa-shield' },
-                { id: 'boss4', mapId: 1, name: 'Titan Khổng Lồ', reqHp: 750000, rewardCash: 1500000, rewardBoxId: 'b2', icon: 'fa-skull' },
-                { id: 'boss5', mapId: 2, name: 'Trùm Frieza', reqHp: 20000000, rewardCash: 35000000, rewardBoxId: 'b3', icon: 'fa-meteor' },
-                { id: 'boss6', mapId: 2, name: 'Chiến Binh Jiren', reqHp: 500000000, rewardCash: 800000000, rewardBoxId: 'b3', icon: 'fa-khanda' },
-                { id: 'boss7', mapId: 3, name: 'Thượng Huyền Akaza', reqHp: 10000000000, rewardCash: 15000000000, rewardBoxId: 'b4', icon: 'fa-gem' },
-                { id: 'boss8', mapId: 3, name: 'Chúa Quỷ Muzan', reqHp: 250000000000, rewardCash: 400000000000, rewardBoxId: 'b4', icon: 'fa-spaghetti-monster-flying' }
+            3: [
+                { name: "Rùa Kame", rarity: "Common", mult: 1.0, icon: "🐢", color: "text-green-400" },
+                { name: "Mèo Karin", rarity: "Rare", mult: 2.5, icon: "🐱", color: "text-blue-400" },
+                { name: "Thần Kaio", rarity: "Epic", mult: 6.0, icon: "🐵", color: "text-purple-400" },
+                { name: "Rồng Thần Shenron", rarity: "Mythic", mult: 15.0, icon: "🐉", color: "text-amber-300" }
             ]
         };
 
-        /* --- GAME STATE --- */
-        let gameState = {
+        /* GAME STATE */
+        window.gameState = {
+            playerName: "Võ Sĩ " + Math.floor(Math.random() * 9000 + 1000),
             strength: 0,
             cash: 0,
             rebirths: 0,
-            currentMap: 0,
-            unlockedMaps: [0],
-            equippedWeight: 'w1',
-            inventoryWeights: ['w1'],
-            inventoryPets: [],
-            autoTrain: false
+            currentMapIndex: 0,
+            unlockedMaps: [true, false, false, false, false, false, false, false],
+            selectedBossIndex: 0,
+            currentBossHP: 100,
+            currentWeightIndex: 0,
+            unlockedWeights: [true, false, false, false, false, false, false, false, false, false, false, false, false],
+            pets: [],
+            autoTrain: false,
+            autoFight: false,
+            autoWeight: false,
+            autoHatch: false
         };
 
-        // Number Formatter (1K, 1M, 1B, 1T, 1Qa...)
+        let realPlayersCache = [];
+        let leaderboardSortMetric = 'strength';
+
+        /* NUMBERS FORMATTER */
         function formatNum(num) {
-            if (num < 1000) return Math.floor(num).toLocaleString();
-            const suffixes = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'];
+            if (num === null || num === undefined) return "0";
+            if (num < 1000) return Math.floor(num).toLocaleString('en-US');
+            const suffixes = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"];
             const i = Math.floor(Math.log10(num) / 3);
             if (i >= suffixes.length) return num.toExponential(2);
             const formatted = (num / Math.pow(10, i * 3)).toFixed(2);
-            return formatted + suffixes[i];
+            return `${formatted} ${suffixes[i]}`;
         }
 
-        /* --- LOCAL STORAGE --- */
-        function saveGame() {
-            try {
-                localStorage.setItem('anime_sim_strength_save', JSON.stringify(gameState));
-            } catch (e) { console.error(e); }
-        }
+        /* UPDATE UI ENGINE */
+        function updateUI() {
+            const st = window.gameState;
 
-        function loadGame() {
-            try {
-                const data = localStorage.getItem('anime_sim_strength_save');
-                if (data) gameState = { ...gameState, ...JSON.parse(data) };
-            } catch (e) { console.error(e); }
-        }
+            // Header Display
+            document.getElementById('stat-strength').innerText = formatNum(st.strength);
+            document.getElementById('stat-cash').innerText = formatNum(st.cash);
+            document.getElementById('stat-rebirth').innerText = formatNum(st.rebirths);
+            document.getElementById('player-name-display').innerText = st.playerName;
 
-        /* --- CORE STAT CALCULATIONS --- */
-        
-        // Strength Multiplier from Equipped Pets
-        function getPetStrengthMulti() {
-            let bonus = 0;
-            gameState.inventoryPets.forEach(p => {
-                if (p.equipped && p.strBonus) {
-                    bonus += p.strBonus;
-                }
-            });
-            return 1 + bonus;
-        }
+            // Active Weight Header & Avatar
+            const curWeight = WEIGHTS_DATA[st.currentWeightIndex];
+            document.getElementById('active-weight-name').innerText = curWeight.name;
+            document.getElementById('active-weight-icon').innerText = curWeight.icon;
+            document.getElementById('stage-weight-badge').innerText = curWeight.icon;
 
-        // Strength Gain per Click
-        function getStrengthPerClick() {
-            const weightObj = GAME_DATA.weights.find(w => w.id === gameState.equippedWeight) || GAME_DATA.weights[0];
-            const rebirthMulti = 1 + (gameState.rebirths * 2.0);
-            const petMulti = getPetStrengthMulti();
-            return Math.floor(weightObj.power * rebirthMulti * petMulti);
-        }
+            // Pets Count
+            const equippedPets = st.pets.filter(p => p.equipped);
+            document.getElementById('pet-count-display').innerText = `${equippedPets.length}/5`;
+            document.getElementById('equipped-counter').innerText = `${equippedPets.length}/5`;
 
-        // Cash per Second from Equipped Pets
-        function getCashPerSec() {
-            const baseCPS = gameState.inventoryPets
-                .filter(p => p.equipped)
-                .reduce((sum, p) => sum + p.cps, 0);
-            const rebirthMulti = 1 + (gameState.rebirths * 0.5);
-            return Math.floor(baseCPS * rebirthMulti);
-        }
+            // Current Map Details
+            const currentMap = MAPS_DATA[st.currentMapIndex];
+            document.getElementById('map-indicator').innerText = `Map ${st.currentMapIndex + 1}/8`;
+            document.getElementById('map-name').innerText = currentMap.name;
 
-        // CRITICAL REQUIREMENT: Boss Damage equals STRENGTH!
-        function getBossDamagePerClick() {
-            const petMulti = getPetStrengthMulti();
-            // Minimum 1 damage for fresh players with 0 strength
-            const dmg = Math.max(1, Math.floor(gameState.strength * petMulti));
-            return dmg;
-        }
+            const isUnlocked = st.unlockedMaps[st.currentMapIndex];
+            const unlockBtn = document.getElementById('unlock-map-btn');
+            const statusText = document.getElementById('map-unlock-status');
 
-        /* --- CORE ACTIONS --- */
-
-        // Train Action
-        function doTrain(event) {
-            initAudio();
-            const gain = getStrengthPerClick();
-            gameState.strength += gain;
-            playSound('train');
-            
-            // Visual floating text
-            const x = event && event.clientX ? event.clientX : window.innerWidth / 2;
-            const y = event && event.clientY ? event.clientY : window.innerHeight / 2;
-            createFloatingText(`+${formatNum(gain)} Str`, x, y, '#ffea00');
-            
-            // Animate canvas character
-            liftWeightAnim = 1.0;
-            
-            updateUI();
-        }
-
-        // Auto Train Toggle
-        function toggleAutoTrain() {
-            initAudio();
-            gameState.autoTrain = !gameState.autoTrain;
-            const btn = document.getElementById('btnAutoTrain');
-            const icon = document.getElementById('iconAutoTrain');
-            const text = document.getElementById('textAutoTrain');
-            
-            if (gameState.autoTrain) {
-                btn.classList.add('bg-gradient-to-b', 'from-emerald-500', 'to-green-700', 'border-green-300');
-                btn.classList.remove('from-gray-700', 'to-gray-900', 'border-gray-600');
-                icon.className = "fa-solid fa-robot text-xl text-yellow-300 animate-spin";
-                text.innerText = "Auto Train: ON";
+            if (isUnlocked) {
+                statusText.className = "text-xs text-green-400 font-semibold";
+                statusText.innerHTML = `<i class="fa-solid fa-lock-open"></i> Đã Mở Khóa`;
+                unlockBtn.classList.add('hidden');
             } else {
-                btn.classList.remove('from-emerald-500', 'to-green-700', 'border-green-300');
-                btn.classList.add('from-gray-700', 'to-gray-900', 'border-gray-600');
-                icon.className = "fa-solid fa-robot text-xl text-gray-400";
-                text.innerText = "Auto Train: OFF";
-            }
-        }
+                statusText.className = "text-xs text-red-400 font-semibold";
+                statusText.innerHTML = `<i class="fa-solid fa-lock"></i> Chưa Mở Khóa`;
+                unlockBtn.classList.remove('hidden');
 
-        // Rebirth Execution
-        function executeRebirth() {
-            const req = Math.floor(10000 * Math.pow(3.0, gameState.rebirths));
-            if (gameState.strength >= req) {
-                gameState.strength = 0;
-                gameState.rebirths += 1;
-                playSound('boss_win');
-                closeModal('rebirthModal');
-                createFloatingText("REBIRTH CẤP TĂNG!", window.innerWidth/2, window.innerHeight/2, '#a855f7');
-                updateUI();
-                saveGame();
-            } else {
-                alert("Bạn chưa đủ Strength để Rebirth!");
-            }
-        }
-
-        /* --- BOSS BATTLE SYSTEM WITH STRENGTH SCALED DAMAGE --- */
-        let activeBoss = null;
-        let activeBossHp = 0;
-        let bossBattleTimer = null;
-        let bossTimeLeft = 20;
-
-        function startBossBattle(bossId) {
-            const boss = GAME_DATA.bosses.find(b => b.id === bossId);
-            if (!boss) return;
-
-            activeBoss = boss;
-            activeBossHp = boss.reqHp;
-            bossTimeLeft = 20;
-
-            closeModal('bossModal');
-            document.getElementById('bossBattleOverlay').classList.remove('hidden');
-            document.getElementById('battleBossName').innerText = boss.name;
-            document.getElementById('bossIconAnim').className = `fa-solid ${boss.icon} text-9xl md:text-[11rem] text-red-500 animate-pulse drop-shadow-2xl`;
-
-            updateBossHpUI();
-
-            // Start Countdown Timer
-            clearInterval(bossBattleTimer);
-            bossBattleTimer = setInterval(() => {
-                bossTimeLeft -= 1;
-                document.getElementById('bossTimerText').innerText = bossTimeLeft;
-                if (bossTimeLeft <= 0) {
-                    endBossBattle(false);
-                }
-            }, 1000);
-        }
-
-        // ATTACK BOSS METHOD - DAMAGE = STRENGTH!
-        function attackBoss(event) {
-            if (!activeBoss) return;
-            
-            const dmg = getBossDamagePerClick();
-            activeBossHp -= dmg;
-            playSound('boss_hit');
-
-            // Floating Damage Number directly over click spot or center boss
-            const x = event && event.clientX ? event.clientX : window.innerWidth / 2;
-            const y = event && event.clientY ? event.clientY : window.innerHeight / 2;
-            createFloatingText(`-${formatNum(dmg)}`, x, y, '#ff2a55');
-            
-            if (activeBossHp <= 0) {
-                activeBossHp = 0;
-                endBossBattle(true);
-            }
-            updateBossHpUI();
-        }
-
-        function updateBossHpUI() {
-            if (!activeBoss) return;
-            const pct = Math.max(0, (activeBossHp / activeBoss.reqHp) * 100);
-            document.getElementById('bossHpBar').style.width = pct + '%';
-            document.getElementById('bossHpText').innerText = `${formatNum(activeBossHp)} / ${formatNum(activeBoss.reqHp)} HP`;
-            document.getElementById('currentBossDmgStat').innerText = formatNum(getBossDamagePerClick());
-        }
-
-        function endBossBattle(isWin) {
-            clearInterval(bossBattleTimer);
-            document.getElementById('bossBattleOverlay').classList.add('hidden');
-
-            if (isWin) {
-                playSound('boss_win');
-                gameState.cash += activeBoss.rewardCash;
-                
-                // Reward Box Auto Roll
-                const box = GAME_DATA.boxes.find(b => b.id === activeBoss.rewardBoxId);
-                alert(`VICTORY! Bạn đã hạ gục ${activeBoss.name}!\nPhần thưởng: +${formatNum(activeBoss.rewardCash)} Cash + 1 Hộp Mù!`);
-                
-                if (box) {
-                    rollPetFromBox(box, true); // free box hatch reward
-                }
-            } else {
-                alert(`THẤT BẠI! Bạn chưa hạ gục được ${activeBoss.name} trong 20s. Hãy tập tạ tăng Strength để quay lại!`);
+                // REQUIREMENT: Map Unlock Cost = 14x Cash of Boss 4 of previous map
+                const prevMap = MAPS_DATA[st.currentMapIndex - 1];
+                const prevBoss4 = prevMap.bosses[3];
+                const unlockCost = prevBoss4.cash * 14;
+                document.getElementById('unlock-cost-text').innerText = formatNum(unlockCost) + " Cash";
             }
 
-            activeBoss = null;
-            updateUI();
+            // Render Boss Selector List
+            renderBossList();
+
+            // Render Arena Boss View
+            const currentBoss = currentMap.bosses[st.selectedBossIndex];
+            document.getElementById('arena-boss-badge').innerText = `Boss #${st.selectedBossIndex + 1}`;
+            document.getElementById('arena-boss-name').innerText = currentBoss.name;
+            document.getElementById('boss-avatar-icon').innerText = currentBoss.icon;
+            document.getElementById('boss-reward-preview').innerText = `+${formatNum(currentBoss.cash)} Cash`;
+
+            // Boss HP Bar
+            const hpPercent = Math.max(0, Math.min(100, (st.currentBossHP / currentBoss.hp) * 100));
+            document.getElementById('boss-hp-bar').style.width = `${hpPercent}%`;
+            document.getElementById('boss-hp-text').innerText = `${formatNum(st.currentBossHP)} / ${formatNum(currentBoss.hp)} HP`;
+
+            // Training Gain Preview
+            const trainGain = getClickStrengthGain();
+            document.getElementById('train-gain-text').innerText = `+${formatNum(trainGain)} Str/Click`;
+
+            // Hatch Cost
+            const hatchCost = (st.currentMapIndex + 1) * 500;
+            document.getElementById('hatch-cost-text').innerText = formatNum(hatchCost);
+
+            // Rebirth Requirements
+            const rebirthReq = Math.floor(10000 * Math.pow(5, st.rebirths));
+            document.getElementById('rebirth-req-text').innerText = formatNum(rebirthReq);
+            document.getElementById('rebirth-boost-text').innerText = `+${(st.rebirths + 1) * 100}% Multiplier`;
+
+            // Render Weight Shop
+            renderWeightShop();
+
+            // Save state & sync
             saveGame();
+            if (window.syncPlayerToFirestore) window.syncPlayerToFirestore();
         }
 
-        /* --- GACHA & PETS LOGIC --- */
-        function openBox(boxId) {
-            const box = GAME_DATA.boxes.find(b => b.id === boxId);
-            if (!box) return;
+        /* CALC STRENGTH PER CLICK */
+        function getClickStrengthGain() {
+            const st = window.gameState;
+            const curWeight = WEIGHTS_DATA[st.currentWeightIndex];
+            const baseStr = curWeight.baseStr;
+            const rebirthMult = 1 + (st.rebirths * 1.0);
+            
+            let petMult = 1.0;
+            st.pets.filter(p => p.equipped).forEach(p => petMult += p.mult);
 
-            if (gameState.cash < box.cost) {
-                alert("Bạn không đủ Cash để mở Hộp Mù này!");
+            return Math.floor(baseStr * rebirthMult * petMult);
+        }
+
+        /* RENDER BOSS SELECTION CARDS */
+        function renderBossList() {
+            const container = document.getElementById('boss-list-container');
+            const currentMap = MAPS_DATA[window.gameState.currentMapIndex];
+            container.innerHTML = '';
+
+            currentMap.bosses.forEach((boss, idx) => {
+                const isSelected = (window.gameState.selectedBossIndex === idx);
+                const card = document.createElement('div');
+                
+                card.className = `glass-card rounded-xl p-2 flex items-center justify-between gap-2 border transition-all cursor-pointer ${
+                    isSelected ? 'boss-card-selected' : 'border-white/10 hover:border-yellow-500/40'
+                }`;
+
+                card.onclick = () => selectBoss(idx);
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <div class="w-9 h-9 rounded-lg bg-black/50 border border-white/20 flex items-center justify-center text-xl">
+                            ${boss.icon}
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[9px] font-black px-1.5 py-0.2 bg-red-900/80 text-red-200 rounded">Boss #${idx + 1}</span>
+                                <h4 class="font-extrabold text-xs sm:text-sm ${isSelected ? 'text-yellow-300' : 'text-white'}">${boss.name}</h4>
+                            </div>
+                            <div class="text-[10px] text-gray-300 flex items-center gap-2 mt-0.5">
+                                <span><i class="fa-solid fa-heart text-red-400"></i> ${formatNum(boss.hp)} HP</span>
+                                <span>•</span>
+                                <span><i class="fa-solid fa-coins text-yellow-400"></i> +${formatNum(boss.cash)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        ${isSelected 
+                            ? `<span class="bg-yellow-500 text-black text-[10px] font-black px-2.5 py-1 rounded-lg flex items-center gap-1">
+                                <i class="fa-solid fa-crosshairs"></i> ĐÁNH
+                               </span>`
+                            : `<button class="roblox-btn bg-purple-700 hover:bg-purple-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg">
+                                CHỌN
+                               </button>`
+                        }
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function selectBoss(bossIdx) {
+            if (window.gameState.selectedBossIndex === bossIdx) return;
+            window.gameState.selectedBossIndex = bossIdx;
+            const boss = MAPS_DATA[window.gameState.currentMapIndex].bosses[bossIdx];
+            window.gameState.currentBossHP = boss.hp;
+            playTone(300, 'sine', 0.05, 0.1);
+            updateUI();
+        }
+
+        function changeMap(dir) {
+            const newIndex = window.gameState.currentMapIndex + dir;
+            if (newIndex >= 0 && newIndex < MAPS_DATA.length) {
+                window.gameState.currentMapIndex = newIndex;
+                window.gameState.selectedBossIndex = 0;
+                const boss = MAPS_DATA[window.gameState.currentMapIndex].bosses[0];
+                window.gameState.currentBossHP = boss.hp;
+                playTone(400, 'triangle', 0.08, 0.1);
+                updateUI();
+            }
+        }
+
+        function unlockCurrentMap() {
+            const st = window.gameState;
+            if (st.currentMapIndex === 0) return;
+            const prevMap = MAPS_DATA[st.currentMapIndex - 1];
+            const prevBoss4 = prevMap.bosses[3];
+            const unlockCost = prevBoss4.cash * 14;
+
+            if (st.cash >= unlockCost) {
+                st.cash -= unlockCost;
+                st.unlockedMaps[st.currentMapIndex] = true;
+                playVictorySound();
+                showFloatingText("BẢN ĐỒ MỚI ĐÃ MỞ KHÓA!", "#22c55e");
+                updateUI();
+            } else {
+                playTone(150, 'sawtooth', 0.2, 0.2);
+                showFloatingText("Không đủ Cash!", "#ef4444");
+            }
+        }
+
+        /* RENDER WEIGHT SHOP */
+        function renderWeightShop() {
+            const container = document.getElementById('weight-shop-list');
+            const st = window.gameState;
+            container.innerHTML = '';
+
+            WEIGHTS_DATA.forEach((w) => {
+                const isOwned = st.unlockedWeights[w.id];
+                const isEquipped = (st.currentWeightIndex === w.id);
+
+                const card = document.createElement('div');
+                card.className = `glass-card p-2 rounded-xl flex items-center justify-between gap-2 border ${
+                    isEquipped ? 'border-amber-400 bg-amber-950/40' : 'border-white/10'
+                }`;
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-lg bg-black/50 border border-white/20 flex items-center justify-center text-xl">
+                            ${w.icon}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xs text-white">${w.name}</h4>
+                            <div class="text-[10px] text-amber-300 font-extrabold">+${formatNum(w.baseStr)} Base Strength</div>
+                        </div>
+                    </div>
+
+                    <div>
+                        ${isEquipped 
+                            ? `<span class="text-[10px] bg-amber-500 text-black font-extrabold px-2.5 py-1 rounded-lg">Đang Dùng</span>`
+                            : isOwned 
+                                ? `<button onclick="equipWeight(${w.id})" class="roblox-btn bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg">Trang Bị</button>`
+                                : `<button onclick="buyWeight(${w.id})" class="roblox-btn bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg">Mua ($${formatNum(w.cost)})</button>`
+                        }
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function equipWeight(weightId) {
+            if (window.gameState.unlockedWeights[weightId]) {
+                window.gameState.currentWeightIndex = weightId;
+                playTone(450, 'sine', 0.05, 0.1);
+                updateUI();
+            }
+        }
+
+        function buyWeight(weightId) {
+            const st = window.gameState;
+            const weight = WEIGHTS_DATA[weightId];
+            if (st.cash >= weight.cost) {
+                st.cash -= weight.cost;
+                st.unlockedWeights[weightId] = true;
+                st.currentWeightIndex = weightId;
+                playVictorySound();
+                showFloatingText(`Đã mua ${weight.name}!`, "#22c55e");
+                updateUI();
+            } else {
+                showFloatingText("Không đủ Cash mua Tạ!", "#ef4444");
+            }
+        }
+
+        function autoBuyWeightLogic() {
+            const st = window.gameState;
+            if (!st.autoWeight) return;
+
+            for (let i = WEIGHTS_DATA.length - 1; i >= 0; i--) {
+                const w = WEIGHTS_DATA[i];
+                if (!st.unlockedWeights[i] && st.cash >= w.cost) {
+                    buyWeight(i);
+                    break;
+                }
+            }
+        }
+
+        /* TRAIN & FIGHT MECHANICS */
+        function clickTrain() {
+            const gain = getClickStrengthGain();
+            window.gameState.strength += gain;
+
+            playTrainSound();
+            showFloatingText(`+${formatNum(gain)} Str`, "#f87171");
+
+            const avatar = document.getElementById('player-avatar');
+            avatar.classList.add('scale-110');
+            setTimeout(() => avatar.classList.remove('scale-110'), 100);
+
+            updateUI();
+        }
+
+        function clickFight() {
+            const st = window.gameState;
+            if (!st.unlockedMaps[st.currentMapIndex]) {
+                showFloatingText("Hãy mở khóa Map trước!", "#ef4444");
                 return;
             }
 
-            gameState.cash -= box.cost;
-            updateUI();
-            closeModal('gachaModal');
+            const boss = MAPS_DATA[st.currentMapIndex].bosses[st.selectedBossIndex];
+            const dmg = st.strength > 0 ? st.strength : 1;
 
-            rollPetFromBox(box, false);
-        }
+            st.currentBossHP -= dmg;
+            playAttackSound();
 
-        function rollPetFromBox(box, isFreeReward) {
-            document.getElementById('gachaRevealModal').classList.remove('hidden');
-            document.getElementById('gachaBoxContainer').classList.remove('hidden');
-            document.getElementById('gachaPetCard').classList.add('hidden');
-            document.getElementById('gachaPetCard').classList.remove('flex');
+            const bossBox = document.getElementById('boss-avatar-box');
+            bossBox.classList.add('hit-anim');
+            setTimeout(() => bossBox.classList.remove('hit-anim'), 200);
 
-            playSound('hatch');
+            showFloatingText(`-${formatNum(dmg)} HP`, "#eab308");
 
-            setTimeout(() => {
-                const rand = Math.random() * 100;
-                let cumulative = 0;
-                let selectedPet = box.pets[0];
+            if (st.currentBossHP <= 0) {
+                const rewardCash = boss.cash;
+                st.cash += rewardCash;
+                playVictorySound();
+                showFloatingText(`+${formatNum(rewardCash)} CASH!`, "#22c55e");
+                st.currentBossHP = boss.hp;
+            }
 
-                for (let pet of box.pets) {
-                    cumulative += pet.chance;
-                    if (rand <= cumulative) {
-                        selectedPet = pet;
-                        break;
-                    }
-                }
-
-                // Add to inventory
-                const newPet = {
-                    uid: 'pet_' + Date.now() + '_' + Math.floor(Math.random()*1000),
-                    name: selectedPet.name,
-                    rarity: selectedPet.rarity,
-                    cps: selectedPet.cps,
-                    strBonus: selectedPet.strBonus,
-                    icon: selectedPet.icon,
-                    color: selectedPet.color,
-                    equipped: false
-                };
-                gameState.inventoryPets.push(newPet);
-
-                // Auto equip if slots available
-                const equippedCount = gameState.inventoryPets.filter(p => p.equipped).length;
-                if (equippedCount < 3) {
-                    newPet.equipped = true;
-                }
-
-                // Reveal Pet Card UI
-                document.getElementById('gachaBoxContainer').classList.add('hidden');
-                const card = document.getElementById('gachaPetCard');
-                card.classList.remove('hidden');
-                card.classList.add('flex');
-
-                document.getElementById('petRarityBadge').innerText = `${selectedPet.rarity} (${selectedPet.chance}%)`;
-                document.getElementById('petCardIcon').className = `fa-solid ${selectedPet.icon} text-8xl ${selectedPet.color} my-4`;
-                document.getElementById('petCardName').innerText = selectedPet.name;
-                document.getElementById('petCardStatCPS').innerText = `+${formatNum(selectedPet.cps)} Cash/s`;
-                document.getElementById('petCardStatStr').innerText = `+${Math.floor(selectedPet.strBonus * 100)}% Strength Bonus`;
-
-                playSound('boss_win');
-                saveGame();
-            }, 1600);
-        }
-
-        function closeGachaReveal() {
-            document.getElementById('gachaRevealModal').classList.add('hidden');
             updateUI();
         }
 
-        function togglePetEquip(uid) {
-            const pet = gameState.inventoryPets.find(p => p.uid === uid);
+        function showFloatingText(text, colorHex) {
+            const container = document.getElementById('damage-container');
+            if (!container) return;
+
+            const el = document.createElement('div');
+            el.className = 'damage-number text-xs sm:text-sm';
+            el.innerText = text;
+            el.style.color = colorHex;
+            
+            const randomX = Math.random() * 100 - 50;
+            const randomY = Math.random() * 30 - 15;
+            el.style.left = `calc(50% + ${randomX}px)`;
+            el.style.top = `calc(50% + ${randomY}px)`;
+
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 850);
+        }
+
+        /* PET SYSTEM WITH BULK DELETE & MAX 5 EQUIP */
+        function hatchPet() {
+            const st = window.gameState;
+            const cost = (st.currentMapIndex + 1) * 500;
+            if (st.cash < cost) {
+                showFloatingText("Không đủ Cash!", "#ef4444");
+                return;
+            }
+
+            st.cash -= cost;
+
+            const pool = PET_TEMPLATES[st.currentMapIndex + 1] || PET_TEMPLATES[1];
+            const randomPet = pool[Math.floor(Math.random() * pool.length)];
+
+            const newPet = {
+                id: Date.now() + Math.random(),
+                name: randomPet.name,
+                rarity: randomPet.rarity,
+                mult: randomPet.mult,
+                icon: randomPet.icon,
+                color: randomPet.color,
+                equipped: false
+            };
+
+            st.pets.push(newPet);
+            playHatchSound();
+
+            showGachaModal(newPet);
+            renderPetInventory();
+            updateUI();
+        }
+
+        function toggleEquipPet(petId) {
+            const st = window.gameState;
+            const pet = st.pets.find(p => p.id === petId);
             if (!pet) return;
 
             if (!pet.equipped) {
-                const currentlyEquipped = gameState.inventoryPets.filter(p => p.equipped).length;
-                if (currentlyEquipped >= 3) {
-                    alert("Bạn chỉ có thể trang bị tối đa 3 nhân vật cùng lúc!");
+                const equippedCount = st.pets.filter(p => p.equipped).length;
+                if (equippedCount >= 5) {
+                    showFloatingText("Tối đa 5 Linh Thú trang bị!", "#ef4444");
                     return;
                 }
                 pet.equipped = true;
             } else {
                 pet.equipped = false;
             }
-            playSound('click');
-            renderPetsModal();
+
+            playTone(500, 'sine', 0.05, 0.1);
+            renderPetInventory();
             updateUI();
         }
 
-        function equipBestPets() {
-            gameState.inventoryPets.forEach(p => p.equipped = false);
-            // Sort by CPS + strBonus
-            const sorted = [...gameState.inventoryPets].sort((a,b) => (b.cps + b.strBonus*10000) - (a.cps + a.strBonus*10000));
-            for (let i = 0; i < Math.min(3, sorted.length); i++) {
+        function deleteSinglePet(petId) {
+            const st = window.gameState;
+            const idx = st.pets.findIndex(p => p.id === petId);
+            if (idx !== -1) {
+                if (st.pets[idx].equipped) {
+                    showFloatingText("Không thể xóa Pet đang trang bị!", "#ef4444");
+                    return;
+                }
+                st.pets.splice(idx, 1);
+                playTone(200, 'sawtooth', 0.1, 0.1);
+                renderPetInventory();
+                updateUI();
+            }
+        }
+
+        function autoEquipBestPets() {
+            const st = window.gameState;
+            st.pets.forEach(p => p.equipped = false);
+            const sorted = [...st.pets].sort((a, b) => b.mult - a.mult);
+            for (let i = 0; i < Math.min(5, sorted.length); i++) {
                 sorted[i].equipped = true;
             }
-            playSound('buy');
-            renderPetsModal();
+            showFloatingText("Đã trang bị 5 Pet mạnh nhất!", "#3b82f6");
+            renderPetInventory();
             updateUI();
         }
 
-        /* --- SHOP & MAP TELEPORT --- */
-        function buyWeight(weightId) {
-            const w = GAME_DATA.weights.find(item => item.id === weightId);
-            if (!w) return;
+        function openBulkDeleteModal() {
+            document.getElementById('bulk-delete-modal').classList.remove('hidden');
+        }
 
-            if (gameState.inventoryWeights.includes(w.id)) {
-                gameState.equippedWeight = w.id;
-                playSound('click');
-            } else if (gameState.cash >= w.cost) {
-                gameState.cash -= w.cost;
-                gameState.inventoryWeights.push(w.id);
-                gameState.equippedWeight = w.id;
-                playSound('buy');
-            } else {
-                alert("Bạn không đủ Cash để mua Tạ này!");
+        function closeBulkDeleteModal() {
+            document.getElementById('bulk-delete-modal').classList.add('hidden');
+        }
+
+        function executeBulkDelete(type) {
+            const st = window.gameState;
+            const initialCount = st.pets.length;
+
+            if (type === 'Common') {
+                st.pets = st.pets.filter(p => p.equipped || p.rarity !== 'Common');
+            } else if (type === 'Rare') {
+                st.pets = st.pets.filter(p => p.equipped || p.rarity !== 'Rare');
+            } else if (type === 'All') {
+                st.pets = st.pets.filter(p => p.equipped);
             }
-            renderShopModal();
+
+            const deletedCount = initialCount - st.pets.length;
+            playTone(180, 'sawtooth', 0.15, 0.15);
+            showFloatingText(`Đã xóa ${deletedCount} Pet!`, "#f87171");
+            closeBulkDeleteModal();
+            renderPetInventory();
             updateUI();
-            saveGame();
         }
 
-        function travelMap(mapId) {
-            const m = GAME_DATA.maps.find(item => item.id === mapId);
-            if (!m) return;
+        function renderPetInventory() {
+            const container = document.getElementById('pet-inventory-list');
+            const st = window.gameState;
+            container.innerHTML = '';
 
-            if (gameState.unlockedMaps.includes(m.id)) {
-                gameState.currentMap = m.id;
-                playSound('click');
-            } else if (gameState.cash >= m.cost) {
-                gameState.cash -= m.cost;
-                gameState.unlockedMaps.push(m.id);
-                gameState.currentMap = m.id;
-                playSound('buy');
-            } else {
-                alert("Bạn không đủ Cash để mở khóa Bản đồ này!");
-            }
-            renderMapModal();
-            updateUI();
-            saveGame();
-        }
-
-        /* --- RENDER MODAL UI --- */
-        function openModal(modalId) {
-            initAudio();
-            playSound('click');
-            document.getElementById(modalId).classList.remove('hidden');
-
-            if (modalId === 'shopModal') renderShopModal();
-            if (modalId === 'gachaModal') renderGachaModal();
-            if (modalId === 'petsModal') renderPetsModal();
-            if (modalId === 'bossModal') renderBossModal();
-            if (modalId === 'mapModal') renderMapModal();
-            if (modalId === 'rebirthModal') renderRebirthModal();
-        }
-
-        function closeModal(modalId) {
-            playSound('click');
-            document.getElementById(modalId).classList.add('hidden');
-        }
-
-        function renderShopModal() {
-            const container = document.getElementById('weightsList');
-            container.innerHTML = GAME_DATA.weights.map(w => {
-                const owned = gameState.inventoryWeights.includes(w.id);
-                const equipped = gameState.equippedWeight === w.id;
-
-                return `
-                    <div class="bg-slate-900/90 border-2 ${equipped ? 'border-yellow-400 bg-yellow-950/20' : 'border-slate-700'} rounded-2xl p-3 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <i class="fa-solid ${w.icon} text-3xl text-yellow-400"></i>
-                            <div>
-                                <div class="font-bold text-white text-sm">${w.name}</div>
-                                <div class="text-xs text-red-400 font-semibold">+${formatNum(w.power)} Strength/Click</div>
-                                <div class="text-[11px] text-emerald-400">${owned ? 'Đã sở hữu' : 'Giá: ' + formatNum(w.cost) + ' Cash'}</div>
-                            </div>
-                        </div>
-                        <button onclick="buyWeight('${w.id}')" class="roblox-btn px-3 py-1.5 rounded-xl text-xs font-black ${equipped ? 'bg-yellow-400 text-black' : owned ? 'bg-blue-600 text-white' : 'bg-emerald-600 text-white'} shadow-roblox">
-                            ${equipped ? 'ĐANG DÙNG' : owned ? 'TRANG BỊ' : 'MUA'}
-                        </button>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderGachaModal() {
-            const container = document.getElementById('boxesList');
-            container.innerHTML = GAME_DATA.boxes.map(b => {
-                return `
-                    <div class="bg-slate-900/90 border-4 ${b.color} rounded-2xl p-4 flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center justify-between">
-                                <span class="font-black text-lg text-white">${b.name}</span>
-                                <i class="fa-solid ${b.icon} text-2xl text-pink-400"></i>
-                            </div>
-                            <div class="text-xs text-emerald-400 font-bold my-1">Giá: ${formatNum(b.cost)} Cash</div>
-                            <div class="text-[10px] text-gray-400 space-y-0.5 my-2">
-                                ${b.pets.map(p => `<div><span class="${p.color} font-bold">${p.rarity}</span>: ${p.name} (+${formatNum(p.cps)}/s, +${Math.floor(p.strBonus*100)}% Str)</div>`).join('')}
-                            </div>
-                        </div>
-                        <button onclick="openBox('${b.id}')" class="roblox-btn w-full bg-gradient-to-r from-pink-500 to-rose-600 text-white font-black py-2 rounded-xl text-xs shadow-roblox mt-2">
-                            MỞ HỘP (${formatNum(b.cost)} CASH)
-                        </button>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderPetsModal() {
-            const container = document.getElementById('petsInventoryList');
-            const equippedCount = gameState.inventoryPets.filter(p => p.equipped).length;
-            document.getElementById('petEquipedCount').innerText = equippedCount;
-
-            if (gameState.inventoryPets.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center text-gray-400 py-8 text-sm">Bạn chưa có Nhân vật đồng hành nào! Hãy mở Hộp Mù để nhận.</div>`;
+            if (st.pets.length === 0) {
+                container.innerHTML = `<div class="col-span-2 text-center text-xs text-gray-500 py-6">Chưa có Linh Thú. Hãy mở Hộp Mù!</div>`;
                 return;
             }
 
-            container.innerHTML = gameState.inventoryPets.map(p => {
-                return `
-                    <div class="bg-slate-900/90 border-2 ${p.equipped ? 'border-emerald-400 bg-emerald-950/30' : 'border-slate-700'} rounded-2xl p-3 flex flex-col items-center text-center justify-between">
-                        <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-slate-800 ${p.color}">${p.rarity}</span>
-                        <i class="fa-solid ${p.icon} text-4xl ${p.color} my-2"></i>
-                        <div class="font-bold text-xs text-white truncate w-full">${p.name}</div>
-                        <div class="text-[10px] text-emerald-400 font-bold">+${formatNum(p.cps)}/s</div>
-                        <div class="text-[10px] text-red-400 font-bold mb-2">+${Math.floor((p.strBonus||0)*100)}% Str</div>
-                        <button onclick="togglePetEquip('${p.uid}')" class="roblox-btn w-full py-1 rounded-xl text-[10px] font-black ${p.equipped ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'} shadow-roblox">
-                            ${p.equipped ? 'THÁO RA' : 'TRANG BỊ'}
-                        </button>
-                    </div>
+            st.pets.forEach(pet => {
+                const card = document.createElement('div');
+                card.className = `glass-card p-2 rounded-xl flex flex-col items-center border relative ${
+                    pet.equipped ? 'border-pink-500 bg-pink-950/40' : 'border-white/10'
+                }`;
+
+                card.innerHTML = `
+                    <button onclick="deleteSinglePet(${pet.id})" title="Xóa Pet" class="absolute top-1 right-1 text-gray-400 hover:text-red-400 text-xs px-1">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                    <div class="text-2xl my-1">${pet.icon}</div>
+                    <div class="font-extrabold text-[11px] text-white truncate w-full text-center">${pet.name}</div>
+                    <div class="text-[9px] font-bold ${pet.color}">${pet.rarity}</div>
+                    <div class="text-[10px] text-green-400 font-extrabold">+${Math.floor(pet.mult * 100)}% Str</div>
+                    <button onclick="toggleEquipPet(${pet.id})" class="mt-1.5 w-full roblox-btn py-0.5 text-[10px] font-black rounded-lg ${
+                        pet.equipped ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-pink-600 hover:bg-pink-500 text-white'
+                    }">
+                        ${pet.equipped ? 'THÁO' : 'TRANG BỊ'}
+                    </button>
                 `;
-            }).join('');
+
+                container.appendChild(card);
+            });
         }
 
-        function renderBossModal() {
-            const container = document.getElementById('bossesList');
-            const currentMapBosses = GAME_DATA.bosses.filter(b => b.mapId === gameState.currentMap);
+        /* REBIRTH SYSTEM */
+        function doRebirth() {
+            const st = window.gameState;
+            const rebirthReq = Math.floor(10000 * Math.pow(5, st.rebirths));
+            if (st.strength >= rebirthReq) {
+                st.rebirths++;
+                st.strength = 0;
+                playVictorySound();
+                showFloatingText("TÁI SINH THÀNH CÔNG!", "#3b82f6");
+                updateUI();
+            } else {
+                showFloatingText("Chưa đủ Sức Mạnh Tái Sinh!", "#ef4444");
+            }
+        }
 
-            container.innerHTML = currentMapBosses.map(b => {
-                const currentDmg = getBossDamagePerClick();
+        /* REAL-TIME FIREBASE LEADERBOARD RENDERER (REAL PLAYERS ONLY) */
+        window.updateRealLeaderboardData = function(playersList) {
+            realPlayersCache = playersList || [];
+            renderRealLeaderboard();
+        };
 
-                return `
-                    <div class="bg-slate-900/90 border-2 border-red-900/60 rounded-2xl p-3.5 flex items-center justify-between gap-3">
-                        <div class="flex items-center gap-3">
-                            <i class="fa-solid ${b.icon} text-3xl text-red-500"></i>
-                            <div>
-                                <div class="font-black text-white text-base">${b.name}</div>
-                                <div class="text-xs text-red-400">Boss HP: ${formatNum(b.reqHp)}</div>
-                                <div class="text-[11px] text-emerald-400">Thưởng: ${formatNum(b.rewardCash)} Cash + Hộp Mù</div>
-                            </div>
-                        </div>
-                        <button onclick="startBossBattle('${b.id}')" class="roblox-btn px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-neon-gold">
-                            KHIÊU CHIẾN
-                        </button>
+        function setLeaderboardSort(metric) {
+            leaderboardSortMetric = metric;
+            ['strength', 'rebirths', 'cash'].forEach(m => {
+                const btn = document.getElementById(`lbsort-${m}`);
+                if (m === metric) {
+                    btn.className = "flex-1 py-1 rounded font-bold bg-yellow-500 text-black";
+                } else {
+                    btn.className = "flex-1 py-1 rounded font-bold text-gray-300 hover:text-white";
+                }
+            });
+            renderRealLeaderboard();
+        }
+
+        function renderRealLeaderboard() {
+            const container = document.getElementById('leaderboard-list');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            // Filter unique players by UID or Name
+            const map = new Map();
+            realPlayersCache.forEach(p => {
+                if (p && p.name) map.set(p.uid || p.name, p);
+            });
+
+            // Always ensure local current player is included
+            const st = window.gameState;
+            const currentUid = window.firebaseUserId || 'local-player';
+            map.set(currentUid, {
+                uid: currentUid,
+                name: st.playerName,
+                strength: st.strength,
+                rebirths: st.rebirths,
+                cash: st.cash
+            });
+
+            const players = Array.from(map.values());
+
+            // Sort purely based on selected metric
+            players.sort((a, b) => (b[leaderboardSortMetric] || 0) - (a[leaderboardSortMetric] || 0));
+
+            document.getElementById('lb-player-count').innerText = `${players.length} Võ Sĩ Real`;
+
+            if (players.length === 0) {
+                container.innerHTML = `<div class="text-center text-xs text-gray-400 py-6">Chưa có dữ liệu người chơi thật.</div>`;
+                return;
+            }
+
+            players.forEach((p, idx) => {
+                const isMe = (p.uid === currentUid || p.name === st.playerName);
+                const item = document.createElement('div');
+                item.className = `p-2 rounded-xl flex items-center justify-between text-xs border ${
+                    isMe 
+                        ? 'bg-yellow-500/20 border-yellow-500 text-yellow-300 font-extrabold' 
+                        : 'bg-black/30 border-white/5 text-gray-300'
+                }`;
+
+                let metricVal = p[leaderboardSortMetric] || 0;
+
+                item.innerHTML = `
+                    <div class="flex items-center gap-2 truncate">
+                        <span class="w-5 font-black text-center ${idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-300' : idx === 2 ? 'text-amber-600' : 'text-gray-500'}">
+                            #${idx + 1}
+                        </span>
+                        <span class="truncate">${p.name} ${isMe ? '<strong class="text-yellow-400">(BẠN)</strong>' : ''}</span>
                     </div>
+                    <span class="font-extrabold text-red-400">${formatNum(metricVal)}</span>
                 `;
-            }).join('');
+
+                container.appendChild(item);
+            });
         }
 
-        function renderMapModal() {
-            const container = document.getElementById('mapsList');
-            container.innerHTML = GAME_DATA.maps.map(m => {
-                const unlocked = gameState.unlockedMaps.includes(m.id);
-                const current = gameState.currentMap === m.id;
-
-                return `
-                    <div class="bg-slate-900/90 border-2 ${current ? 'border-cyan-400 bg-cyan-950/20' : 'border-slate-700'} rounded-2xl p-4 flex flex-col justify-between">
-                        <div>
-                            <div class="font-black text-lg text-white">${m.name}</div>
-                            <div class="text-xs text-emerald-400 font-bold my-1">${unlocked ? 'Đã Mở Khóa' : 'Giá: ' + formatNum(m.cost) + ' Cash'}</div>
-                        </div>
-                        <button onclick="travelMap(${m.id})" class="roblox-btn w-full py-2 rounded-xl text-xs font-black mt-3 ${current ? 'bg-cyan-400 text-slate-950' : unlocked ? 'bg-teal-600 text-white' : 'bg-emerald-600 text-white'} shadow-roblox">
-                            ${current ? 'ĐANG Ở ĐÂY' : unlocked ? 'DỊCH CHUYỂN' : 'MỞ KHÓA MAP'}
-                        </button>
-                    </div>
-                `;
-            }).join('');
+        /* TAB SWITCHER */
+        function switchTab(tab) {
+            ['pets', 'weights', 'rebirth', 'leaderboard'].forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                const content = document.getElementById(`tab-content-${t}`);
+                if (t === tab) {
+                    btn.className = "flex-1 py-1.5 px-2 rounded-xl font-extrabold text-xs transition-all bg-yellow-500 text-black shadow";
+                    content.classList.remove('hidden');
+                    content.classList.add('flex');
+                } else {
+                    btn.className = "flex-1 py-1.5 px-2 rounded-xl font-extrabold text-xs transition-all text-gray-300 hover:text-white";
+                    content.classList.add('hidden');
+                    content.classList.remove('flex');
+                }
+            });
+            if (tab === 'pets') renderPetInventory();
+            if (tab === 'weights') renderWeightShop();
+            if (tab === 'leaderboard') renderRealLeaderboard();
         }
 
-        function renderRebirthModal() {
-            const req = Math.floor(10000 * Math.pow(3.0, gameState.rebirths));
-            document.getElementById('rebirthReqStrength').innerText = formatNum(req);
-            document.getElementById('rebirthCurrentMulti').innerText = 'x' + (1 + gameState.rebirths * 2.0);
-            document.getElementById('rebirthNextMulti').innerText = 'x' + (1 + (gameState.rebirths + 1) * 2.0);
+        /* AUTOMATION TOGGLES */
+        function toggleAutoTrain(val) { window.gameState.autoTrain = val; }
+        function toggleAutoFight(val) { window.gameState.autoFight = val; }
+        function toggleAutoWeight(val) { window.gameState.autoWeight = val; }
+        function toggleAutoHatch(val) { window.gameState.autoHatch = val; }
+
+        /* AUTOMATION LOOP */
+        setInterval(() => {
+            const st = window.gameState;
+            if (st.autoTrain) clickTrain();
+            if (st.autoFight) clickFight();
+            if (st.autoWeight) autoBuyWeightLogic();
+            if (st.autoHatch) hatchPet();
+        }, 250);
+
+        /* MODAL DIALOG HANDLERS */
+        function openNameModal() {
+            document.getElementById('new-name-input').value = window.gameState.playerName;
+            document.getElementById('name-modal').classList.remove('hidden');
+        }
+        function closeNameModal() {
+            document.getElementById('name-modal').classList.add('hidden');
+        }
+        function savePlayerName() {
+            const input = document.getElementById('new-name-input').value.trim();
+            if (input) {
+                window.gameState.playerName = input;
+                closeNameModal();
+                updateUI();
+                renderRealLeaderboard();
+            }
         }
 
-        function updateUI() {
-            document.getElementById('statStrength').innerText = formatNum(gameState.strength);
-            document.getElementById('statCash').innerText = formatNum(gameState.cash);
-            document.getElementById('statRebirth').innerText = 'x' + (1 + gameState.rebirths * 2.0);
-            
-            const cps = getCashPerSec();
-            document.getElementById('statCPS').innerText = formatNum(cps);
+        function showGachaModal(pet) {
+            const modal = document.getElementById('gacha-modal');
+            const iconBox = document.getElementById('gacha-icon-box');
+            const details = document.getElementById('gacha-result-details');
+            const closeBtn = document.getElementById('gacha-close-btn');
 
-            const mapObj = GAME_DATA.maps.find(m => m.id === gameState.currentMap) || GAME_DATA.maps[0];
-            document.getElementById('mapBadge').innerText = mapObj.name;
-
-            const equippedPets = gameState.inventoryPets.filter(p => p.equipped).length;
-            document.getElementById('petEquipBadge').innerText = `${equippedPets}/3`;
-        }
-
-        // Floating Text FX
-        function createFloatingText(text, x, y, color = '#ffea00') {
-            const container = document.getElementById('floatingContainer');
-            const el = document.createElement('div');
-            el.className = 'float-dmg text-xl md:text-3xl font-black text-stroke';
-            el.style.left = (x - 30 + (Math.random()*40 - 20)) + 'px';
-            el.style.top = (y - 20) + 'px';
-            el.style.color = color;
-            el.innerText = text;
-            container.appendChild(el);
+            modal.classList.remove('hidden');
+            iconBox.innerHTML = "🎁";
+            iconBox.className = "w-32 h-32 rounded-3xl bg-gradient-to-tr from-purple-800 to-pink-600 border-4 border-white flex items-center justify-center text-6xl shadow-2xl my-2 animate-bounce";
+            details.classList.add('hidden');
+            closeBtn.classList.add('hidden');
 
             setTimeout(() => {
-                if (el.parentNode) el.parentNode.removeChild(el);
-            }, 850);
+                iconBox.innerHTML = pet.icon;
+                iconBox.classList.remove('animate-bounce');
+                details.classList.remove('hidden');
+                details.classList.add('flex');
+                document.getElementById('gacha-pet-name').innerText = pet.name;
+                document.getElementById('gacha-pet-rarity').innerText = pet.rarity;
+                document.getElementById('gacha-pet-rarity').className = `text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest ${pet.color} bg-black/60 border`;
+                document.getElementById('gacha-pet-multiplier').innerText = `+${Math.floor(pet.mult * 100)}% Strength Multiplier`;
+                closeBtn.classList.remove('hidden');
+            }, 500);
         }
 
-        /* --- CANVAS 2D ANIMATION ENGINE --- */
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
-        let liftWeightAnim = 0;
-        let particles = [];
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        function createParticle() {
-            const mapId = gameState.currentMap;
-            let color = '#f97316';
-            if (mapId === 1) color = '#ef4444';
-            if (mapId === 2) color = '#38bdf8';
-            if (mapId === 3) color = '#c084fc';
-
-            particles.push({
-                x: Math.random() * canvas.width,
-                y: canvas.height + 10,
-                vx: (Math.random() - 0.5) * 1.5,
-                vy: -(Math.random() * 2.2 + 1),
-                size: Math.random() * 6 + 3,
-                color: color,
-                alpha: 1
-            });
+        function closeGachaModal() {
+            document.getElementById('gacha-modal').classList.add('hidden');
         }
 
-        function renderCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            const mapId = gameState.currentMap;
-            const width = canvas.width;
-            const height = canvas.height;
-
-            // Background Gradients Per Map
-            let bgGradient = ctx.createLinearGradient(0, 0, 0, height);
-            if (mapId === 0) {
-                bgGradient.addColorStop(0, '#15803d');
-                bgGradient.addColorStop(0.6, '#166534');
-                bgGradient.addColorStop(1, '#052e16');
-            } else if (mapId === 1) {
-                bgGradient.addColorStop(0, '#7f1d1d');
-                bgGradient.addColorStop(0.6, '#450a0a');
-                bgGradient.addColorStop(1, '#18181b');
-            } else if (mapId === 2) {
-                bgGradient.addColorStop(0, '#0284c7');
-                bgGradient.addColorStop(0.6, '#0369a1');
-                bgGradient.addColorStop(1, '#0c4a6e');
-            } else if (mapId === 3) {
-                bgGradient.addColorStop(0, '#581c87');
-                bgGradient.addColorStop(0.6, '#3b0764');
-                bgGradient.addColorStop(1, '#0f172a');
-            }
-            ctx.fillStyle = bgGradient;
-            ctx.fillRect(0, 0, width, height);
-
-            // Ground Layer
-            ctx.fillStyle = '#090d16';
-            ctx.fillRect(0, height * 0.72, width, height * 0.28);
-            ctx.fillStyle = 'rgba(255,255,255,0.06)';
-            ctx.fillRect(0, height * 0.72, width, 6);
-
-            // Environmental Particles
-            if (Math.random() < 0.4) createParticle();
-            for (let i = particles.length - 1; i >= 0; i--) {
-                const p = particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-                p.alpha -= 0.006;
-
-                ctx.save();
-                ctx.globalAlpha = Math.max(0, p.alpha);
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
-
-                if (p.alpha <= 0 || p.y < -10) particles.splice(i, 1);
-            }
-
-            // Avatar & Rebirth Aura Render
-            const centerX = width / 2;
-            const centerY = height * 0.65;
-
-            // Aura Ring
-            if (gameState.rebirths > 0) {
-                const time = Date.now() * 0.003;
-                ctx.save();
-                ctx.strokeStyle = gameState.rebirths > 3 ? '#ff2a55' : '#a855f7';
-                ctx.lineWidth = 4;
-                ctx.shadowBlur = 20;
-                ctx.shadowColor = ctx.strokeStyle;
-                ctx.beginPath();
-                ctx.arc(centerX, centerY - 20, 75 + Math.sin(time) * 10, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.restore();
-            }
-
-            // Roblox Blocky Figure
-            ctx.save();
-            ctx.translate(centerX, centerY);
-
-            // Shadow
-            ctx.fillStyle = 'rgba(0,0,0,0.4)';
-            ctx.beginPath();
-            ctx.ellipse(0, 35, 45, 12, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Legs
-            ctx.fillStyle = '#1e293b';
-            ctx.fillRect(-22, 0, 18, 35);
-            ctx.fillRect(4, 0, 18, 35);
-
-            // Torso
-            ctx.fillStyle = '#00a2ff';
-            ctx.fillRect(-24, -45, 48, 45);
-
-            // Head
-            ctx.fillStyle = '#fde047';
-            ctx.fillRect(-18, -80, 36, 32);
-
-            // Face
-            ctx.fillStyle = '#000';
-            ctx.fillRect(-10, -68, 5, 8);
-            ctx.fillRect(5, -68, 5, 8);
-            ctx.fillRect(-5, -55, 10, 3);
-
-            // Arms & Weight Lifting Motion
-            const armYOffset = liftWeightAnim > 0 ? -15 : 0;
-            liftWeightAnim = Math.max(0, liftWeightAnim - 0.08);
-
-            ctx.fillStyle = '#00a2ff';
-            ctx.fillRect(-35, -42 + armYOffset, 10, 30);
-            ctx.fillRect(25, -42 + armYOffset, 10, 30);
-
-            // Equipped Weight
-            ctx.fillStyle = '#f59e0b';
-            ctx.fillRect(-50, -25 + armYOffset, 100, 8);
-            ctx.fillStyle = '#dc2626';
-            ctx.fillRect(-58, -37 + armYOffset, 12, 32);
-            ctx.fillRect(46, -37 + armYOffset, 12, 32);
-
-            ctx.restore();
-
-            // Orbiting Pets
-            const equippedPets = gameState.inventoryPets.filter(p => p.equipped);
-            const petTime = Date.now() * 0.002;
-            equippedPets.forEach((pet, idx) => {
-                const angle = (idx / equippedPets.length) * Math.PI * 2 + petTime;
-                const petX = centerX + Math.cos(angle) * 110;
-                const petY = centerY - 30 + Math.sin(petTime * 2 + idx) * 12;
-
-                ctx.save();
-                ctx.fillStyle = '#1e293b';
-                ctx.strokeStyle = '#f59e0b';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.arc(petX, petY, 20, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-
-                ctx.fillStyle = '#fff';
-                ctx.font = 'bold 15px Fredoka';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(pet.name.charAt(0), petX, petY);
-                ctx.restore();
-            });
-
-            requestAnimationFrame(renderCanvas);
+        /* LOCALSTORAGE SAVE & LOAD */
+        function saveGame() {
+            try {
+                localStorage.setItem('anime_simulator_real_save', JSON.stringify(window.gameState));
+            } catch (e) {}
         }
 
-        /* --- ENGINE INIT & LOOPS --- */
-        window.onload = function () {
+        function loadGame() {
+            try {
+                const saved = localStorage.getItem('anime_simulator_real_save');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    window.gameState = { ...window.gameState, ...parsed };
+                    const currentMap = MAPS_DATA[window.gameState.currentMapIndex];
+                    window.gameState.currentBossHP = currentMap.bosses[window.gameState.selectedBossIndex].hp;
+                }
+            } catch (e) {}
+        }
+
+        /* INITIALIZATION */
+        window.onload = function() {
             loadGame();
             updateUI();
-            renderCanvas();
-
-            // Click Area Trainer
-            document.getElementById('clickTargetArea').addEventListener('click', (e) => {
-                doTrain(e);
-            });
-
-            // Keyboard Spacebar Trigger
-            window.addEventListener('keydown', (e) => {
-                if (e.code === 'Space') {
-                    e.preventDefault();
-                    doTrain();
-                }
-            });
-
-            // 1 Second Interval for Income & Auto-Train
-            setInterval(() => {
-                const cps = getCashPerSec();
-                if (cps > 0) {
-                    gameState.cash += cps;
-                    updateUI();
-                }
-
-                if (gameState.autoTrain) {
-                    doTrain();
-                }
-            }, 1000);
-
-            // Auto Save Interval
-            setInterval(() => {
-                saveGame();
-            }, 10000);
+            renderPetInventory();
+            renderWeightShop();
+            renderRealLeaderboard();
         };
     </script>
 </body>
